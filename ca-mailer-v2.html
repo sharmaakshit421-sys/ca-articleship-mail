@@ -393,7 +393,7 @@
       const name = document.getElementById(`rn${rowId}`)?.value || 'Recipient';
       const sender = cfg.name || 'Akshit Sharma';
       if (!b) { document.getElementById('prev').innerHTML = '<span style="color:var(--text-dim)">Preview will appear here...</span>'; return; }
-      const content = `<span class="hi">Dear ${name},</span><br><br>${b.replace(/\n/g,'<br>')}<br><br><span class="hi">Warm Regards,<br>${sender}</span>`;
+      const content = `<span class="hi">Dear ${name},</span><br><br>${b.replace(/\n/g,'<br>')}<br><br><span class="hi">Warm Regards,<br>${sender}<br>+91 9871026122</span>`;
       document.getElementById('prev').innerHTML = content;
     }
 
@@ -424,7 +424,7 @@
         log.appendChild(item);
 
         try {
-          const payload = { to_email: r.email, to_name: r.name, firm_name: r.firm, subject: subj, message: `Dear ${r.name || 'Sir/Madam'},\n\n${body}\n\nWarm Regards,\n${cfg.name}`, from_name: cfg.name };
+          const payload = { to_email: r.email, to_name: r.name, firm_name: r.firm, subject: subj, message: `Dear ${r.name || 'Sir/Madam'},\n\n${body}\n\nWarm Regards,\n${cfg.name}\n+91 9871026122`, from_name: cfg.name };
           if (cvData) { payload.cv_base64 = cvData.base64; payload.cv_name = cvData.name; payload.cv_mimetype = cvData.mimeType; }
           
           await fetch(cfg.url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
