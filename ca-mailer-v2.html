@@ -403,7 +403,7 @@
     <div class="f">
       <label>Subject Line <span class="r">*</span></label>
       <div class="sw">
-        <input type="text" id="subj" placeholder="Application for CA Articleship — Akshit Sharma" oninput="updateCC(this)" maxlength="150" />
+        <input type="text" id="subj" value="Application for CA Articleship - Akshit Sharma" oninput="updateCC(this)" maxlength="150" />
         <span class="cc" id="cc">0/150</span>
       </div>
     </div>
@@ -505,6 +505,8 @@ window.addEventListener('load', () => {
   const s = localStorage.getItem('ca_gas_cfg');
   if (s) { try { cfg = JSON.parse(s); applyConfig(); document.getElementById('modal').classList.add('hidden'); } catch(e){} }
   addRow();
+  const subjInput = document.getElementById('subj');
+  if (subjInput) updateCC(subjInput);
 });
 
 // ─── CONFIG ───
