@@ -506,7 +506,10 @@ window.addEventListener('load', () => {
   if (s) { try { cfg = JSON.parse(s); applyConfig(); document.getElementById('modal').classList.add('hidden'); } catch(e){} }
   addRow();
   const subjInput = document.getElementById('subj');
-  if (subjInput) updateCC(subjInput);
+  if (subjInput) {
+    subjInput.value = "Application for CA Articleship - Akshit Sharma";
+    updateCC(subjInput);
+  }
 });
 
 // ─── CONFIG ───
