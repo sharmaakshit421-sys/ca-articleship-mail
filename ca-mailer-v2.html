@@ -77,8 +77,8 @@
   }
   .status-label { font-size: 11px; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 8px; }
   .status-val { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
-  .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; border: 1px solid #9ca3af; }
+  .dot.on { background: var(--green); border-color: var(--green); box-shadow: 0 0 8px var(--green); }
 
   /* Overlay for mobile sidebar */
   .sidebar-overlay {
@@ -96,7 +96,7 @@
     height: var(--topbar-h);
     background: var(--sidebar);
     border-bottom: 1px solid var(--border);
-    z-index: 100;
+    z-index: 300;
     padding: 0 16px;
     align-items: center;
     justify-content: space-between;
@@ -374,13 +374,20 @@
           <div class="field">
             <label>Subject Line</label>
             <div class="input-wrap">
-              <input type="text" id="subj" maxlength="150" oninput="updateCC(this)">
+              <input type="text" id="subj" maxlength="150" oninput="updateCC(this)" value="Application for CA Articleship - Akshit Sharma">
               <span class="char-count" id="cc">0/150</span>
             </div>
           </div>
           <div class="field">
             <label>Email Body</label>
             <textarea id="body" oninput="updatePreview()" placeholder="Write your cover letter here..."></textarea>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title">👁️ Live Preview</div>
+          <div class="preview-box" id="prev">
+            <span style="color: var(--text-dim)">Preview will appear here as you type...</span>
           </div>
         </div>
 
@@ -404,13 +411,6 @@
             <span style="color: var(--green)">✅</span>
             <div style="flex: 1; font-size: 13px; font-weight: 500;" id="cvname"></div>
             <button onclick="removeCV()" style="background: none; border: none; color: var(--text-dim); cursor: pointer;">✕</button>
-          </div>
-        </div>
-
-        <div class="section-card">
-          <div class="section-title">👁️ Live Preview</div>
-          <div class="preview-box" id="prev">
-            <span style="color: var(--text-dim)">Preview will appear here as you type...</span>
           </div>
         </div>
 
@@ -470,13 +470,10 @@
 
     window.addEventListener('load', () => {
       const s = localStorage.getItem('ca_gas_cfg');
-      if (s) { try { cfg = JSON.parse(s); applyConfig(); document.getElementById('modal').classList.add('hidden'); } catch(e){} }
+      if (s) { try { cfg = JSON.parse(s); applyConfig(); } catch(e){} }
       addRow();
       const subjInput = document.getElementById('subj');
-      if (subjInput) {
-        subjInput.value = "Application for CA Articleship - Akshit Sharma";
-        updateCC(subjInput);
-      }
+      if (subjInput) updateCC(subjInput);
     });
 
     function saveConfig() {
@@ -525,4 +522,5 @@
       const id = rowId;
       const el = document.createElement('div');
       el.className = 'rrow'; el.id = `r${id}`;
-      el.inner
+      el.innerHTML = `
+        <div class="field" style="margin:
