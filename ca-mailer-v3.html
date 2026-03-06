@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA Articleship — Bulk Mailer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0c09;
+    --sidebar: #11100d;
+    --card: #1c1a15;
+    --card-hover: #221f18;
+    --accent: #d4a84b;
+    --accent2: #e8c97a;
+    --accent-dim: rgba(212,168,75,0.15);
+    --accent-glow: rgba(212,168,75,0.06);
+    --text: #f0ead8;
+    --text-muted: #8a8070;
+    --text-dim: #5a5448;
+    --border: #2e2b22;
+    --border-accent: rgba(212,168,75,0.3);
+    --red: #c0392b;
+    --green: #27ae60;
+    --success-bg: rgba(39,174,96,0.1);
+    --error-bg: rgba(192,57,43,0.1);
+    --sidebar-w: 260px;
+    --topbar-h: 56px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 15% -5%, rgba(212,168,75,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 105%, rgba(212,168,75,0.04) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ─── SIDEBAR (desktop) ─── */
+  aside {
+    width: var(--sidebar-w);
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    z-index: 200;
+    transition: transform 0.3s ease;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+  .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 14px; color: var(--bg); flex-shrink: 0;
+  }
+  .brand-name { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
+
+  nav { flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    color: var(--text-muted); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    margin-bottom: 4px; transition: all 0.2s;
+    cursor: pointer;
+  }
+  .nav-item:hover, .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .nav-item i { font-size: 18px; }
+
+  .status-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-top: auto;
+  }
+  .status-label { font-size: 11px; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 8px; }
+  .status-val { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; border: 1px solid #9ca3af; }
+  .dot.on { background: var(--green); border-color: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  /* Overlay for mobile sidebar */
+  .sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 150;
+  }
+  .sidebar-overlay.show { display: block; }
+
+  /* ─── MOBILE TOP BAR ─── */
+  .topbar {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    background: var(--sidebar);
+    border-bottom: 1px solid var(--border);
+    z-index: 300;
+    padding: 0 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; }
+  .topbar-brand .logo { width: 28px; height: 28px; font-size: 12px; }
+  .topbar-brand span { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 17px; }
+  .hamburger {
+    background: none; border: none; color: var(--text);
+    cursor: pointer; padding: 6px; border-radius: 6px;
+    display: flex; flex-direction: column; gap: 5px;
+    transition: background 0.2s;
+  }
+  .hamburger:hover { background: var(--card); }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.3s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ─── MAIN CONTENT ─── */
+  main {
+    flex: 1;
+    margin-left: var(--sidebar-w);
+    padding: 40px 60px;
+    max-width: calc(1200px + var(--sidebar-w));
+    width: 100%;
+  }
+
+  header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; }
+  .welcome h1 { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .welcome p { color: var(--text-muted); font-size: 14px; }
+
+  .actions { display: flex; gap: 12px; flex-shrink: 0; }
+  .btn {
+    padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: var(--bg); font-weight: 700; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,168,75,0.3); }
+  .btn-secondary { background: var(--card); border-color: var(--border); color: var(--text-muted); }
+  .btn-secondary:hover { border-color: var(--border-accent); color: var(--accent); background: var(--card-hover); }
+
+  /* ─── GRID LAYOUT ─── */
+  .grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+
+  .section-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; margin-bottom: 24px;
+    position: relative; overflow: hidden;
+  }
+  .section-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.4;
+  }
+  .section-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+  /* ─── FORMS ─── */
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+  .input-wrap { position: relative; }
+  input, textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; color: var(--text);
+    font-family: inherit; font-size: 16px; /* 16px prevents iOS zoom */ outline: none; transition: all 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  textarea { min-height: 200px; line-height: 1.6; resize: vertical; }
+
+  .char-count { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+
+  /* ─── PREVIEW ─── */
+  .preview-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; font-size: 14px; line-height: 1.6;
+    min-height: 200px; color: var(--text-muted);
+  }
+  .preview-box .hi { color: var(--accent); font-weight: 600; font-family: 'Cormorant Garamond', serif; font-size: 16px; }
+
+  /* ─── RECIPIENTS ─── */
+  .rrow {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
+    display: grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap: 12px; align-items: end;
+  }
+  .rrow .btn-del {
+    color: var(--text-dim); background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer; padding: 8px 10px; font-size: 14px;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .rrow .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--error-bg); }
+
+  /* ─── CV ZONE ─── */
+  .cv-zone {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 30px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--accent-glow);
+  }
+  .cv-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .cv-zone input { display: none; }
+  .cv-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 32px; width: 100%; max-width: 500px;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    padding: 12px 20px; border-radius: 12px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    opacity: 0; transition: all 0.3s ease;
+    z-index: 2000; font-size: 13px; font-weight: 500; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.s { background: rgba(39,174,96,0.15); border: 1px solid rgba(39,174,96,0.4); color: #4ade80; }
+  .toast.e { background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.4); color: #f87171; }
+
+  /* ─── PROGRESS ─── */
+  .prog-card { display: none; margin-top: 24px; }
+  .prog-card.show { display: block; }
+  .pbar-bg { background: var(--bg); height: 8px; border-radius: 4px; overflow: hidden; margin: 12px 0; }
+  .pbar-fill { background: var(--accent); height: 100%; width: 0%; transition: width 0.3s; }
+  .log { max-height: 200px; overflow-y: auto; font-family: 'DM Mono', monospace; font-size: 12px; padding: 12px; background: var(--bg); border-radius: 8px; }
+  .log-item { margin-bottom: 6px; display: flex; gap: 8px; }
+
+  /* ─── BOTTOM SEND BAR (mobile only) ─── */
+  .bottom-bar {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--sidebar);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    gap: 10px;
+    z-index: 90;
+  }
+  .bottom-bar .btn { flex: 1; justify-content: center; padding: 14px; font-size: 15px; }
+
+  /* ════════════════════════
+     RESPONSIVE BREAKPOINTS
+  ════════════════════════ */
+
+  /* ─── TABLET (≤1100px) ─── */
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: 1fr; }
+    main { padding: 30px; }
+  }
+
+  /* ─── MOBILE (≤768px) ─── */
+  @media (max-width: 768px) {
+    /* Show topbar, hide sidebar by default */
+    .topbar { display: flex; }
+    aside {
+      transform: translateX(-100%);
+      top: 0;
+    }
+    aside.open { transform: translateX(0); }
+
+    /* Push main below topbar, remove sidebar margin */
+    main {
+      margin-left: 0;
+      padding: 16px;
+      padding-top: calc(var(--topbar-h) + 16px);
+      padding-bottom: 90px; /* space for bottom bar */
+    }
+
+    /* Header: stack on mobile */
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .welcome h1 { font-size: 22px; }
+    .actions { display: none; } /* moved to bottom bar */
+
+    .section-card { padding: 16px; border-radius: 12px; }
+    .section-title { font-size: 15px; margin-bottom: 16px; }
+
+    /* Recipients: stack fields vertically */
+    .rrow {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+    }
+    .rrow > div:nth-child(3) { grid-column: 1 / -1; }
+    .rrow .btn-del { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
+
+    /* Textarea bigger on mobile for easier typing */
+    textarea { min-height: 160px; font-size: 16px; }
+
+    /* Show bottom send bar */
+    .bottom-bar { display: flex; }
+
+    /* Modal full-width on mobile */
+    .modal { padding: 24px; border-radius: 16px; }
+
+    /* Preview only shows when body has content */
+    .preview-box { min-height: 120px; }
+  }
+
+  /* ─── SMALL MOBILE (≤380px) ─── */
+  @media (max-width: 380px) {
+    .rrow {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+    .rrow > div:nth-child(3) { grid-column: 1; }
+    .rrow .btn-del { grid-column: 1; grid-row: 1; justify-self: end; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Mobile top bar -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="logo">CA</div>
+      <span>Articleship Portal</span>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo">CA</div>
+      <div class="brand-name">Articleship Portal</div>
+    </div>
+    <nav>
+      <div class="nav-item active"><i>✉️</i> Bulk Mailer</div>
+      <a href="ca-tracker.html" class="nav-item"><i>📊</i> Application Tracker</a>
+      <div class="nav-item" onclick="openModal()"><i>⚙️</i> Settings</div>
+    </nav>
+    <div class="status-card">
+      <div class="status-label">System Status</div>
+      <div class="status-val">
+        <div class="dot" id="dot"></div>
+        <span id="statusText">Gmail Not Connected</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Bottom bar for mobile send actions -->
+  <div class="bottom-bar">
+    <button class="btn btn-secondary" onclick="openModal()">⚙️ Config</button>
+    <button class="btn btn-primary" onclick="sendAll()">🚀 Send All</button>
+  </div>
+
+  <main>
+    <header>
+      <div class="welcome">
+        <h1>Welcome back, Akshit</h1>
+        <p>Manage and send your articleship applications with ease.</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="openModal()">Update Config</button>
+        <button class="btn btn-primary" id="sendBtn" onclick="sendAll()">🚀 Send All</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="left-col">
+        <div class="section-card">
+          <div class="section-title">✍️ Email Content</div>
+          <div class="field">
+            <label>Subject Line</label>
+            <div class="input-wrap">
+              <input type="text" id="subj" maxlength="150" oninput="updateCC(this)" value="Application for CA Articleship - Akshit Sharma">
+              <span class="char-count" id="cc">0/150</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Email Body</label>
+            <textarea id="body" oninput="updatePreview()" placeholder="Write your cover letter here..."></textarea>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title">👁️ Live Preview</div>
+          <div class="preview-box" id="prev">
+            <span style="color: var(--text-dim)">Preview will appear here as you type...</span>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title">👥 Recipients (<span id="rcnt">0</span>)</div>
+          <div id="rlist"></div>
+          <button class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="addRow()">＋ Add Recipient</button>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="section-card">
+          <div class="section-title">📄 Attach CV</div>
+          <div class="cv-zone" id="cvzone" onclick="document.getElementById('cvfile').click()">
+            <input type="file" id="cvfile" accept=".pdf,.doc,.docx" onchange="handleCV(this)">
+            <span class="cv-icon">📁</span>
+            <div style="font-weight: 600; font-size: 14px;">Click to upload CV</div>
+            <div style="color: var(--text-dim); font-size: 12px; margin-top: 4px;">PDF, DOC up to 5MB</div>
+          </div>
+          <div id="cvok" style="display: none; align-items: center; gap: 10px; margin-top: 12px; padding: 12px; background: var(--success-bg); border-radius: 8px;">
+            <span style="color: var(--green)">✅</span>
+            <div style="flex: 1; font-size: 13px; font-weight: 500;" id="cvname"></div>
+            <button onclick="removeCV()" style="background: none; border: none; color: var(--text-dim); cursor: pointer;">✕</button>
+          </div>
+        </div>
+
+        <div class="section-card prog-card" id="prog">
+          <div class="section-title">🚀 Deployment Progress</div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;">
+            <span id="plabel">Sending...</span>
+            <span id="pfrac">0/0</span>
+          </div>
+          <div class="pbar-bg"><div class="pbar-fill" id="pbar"></div></div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Setup Modal -->
+  <div class="modal-overlay hidden" id="modal">
+    <div class="modal">
+      <h2 style="margin-bottom: 8px;">One-Time Setup</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Connect your Google Apps Script to send emails via Gmail.</p>
+      
+      <div class="field">
+        <label>Script Web App URL</label>
+        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/...">
+      </div>
+      <div class="field">
+        <label>Your Full Name</label>
+        <input type="text" id="senderName" placeholder="e.g. Akshit Sharma">
+      </div>
+      
+      <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 12px;" onclick="saveConfig()">Save & Connect</button>
+      <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 8px; border: none;" onclick="document.getElementById('modal').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span id="tmsg"></span></div>
+
+  <script>
+    let cfg = { url: '', name: '' };
+    let rowId = 0;
+    let cvData = null;
+
+    function toggleSidebar() {
+      const s = document.getElementById('sidebar');
+      const o = document.getElementById('sidebarOverlay');
+      const h = document.getElementById('hamburger');
+      const isOpen = s.classList.toggle('open');
+      o.classList.toggle('show', isOpen);
+      h.classList.toggle('open', isOpen);
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    window.addEventListener('load', () => {
+      const s = localStorage.getItem('ca_gas_cfg');
+      if (s) { try { cfg = JSON.parse(s); applyConfig(); } catch(e){} }
+      addRow();
+      const subjInput = document.getElementById('subj');
+      if (subjInput) updateCC(subjInput);
+    });
+
+    function saveConfig() {
+      const url = document.getElementById('scriptUrl').value.trim();
+      const name = document.getElementById('senderName').value.trim();
+      if (!url || !name) { showToast('e', 'Fill in all fields'); return; }
+      cfg = { url, name };
+      localStorage.setItem('ca_gas_cfg', JSON.stringify(cfg));
+      applyConfig();
+      document.getElementById('modal').classList.add('hidden');
+      showToast('s', 'Connected to Gmail!');
+    }
+
+    function applyConfig() {
+      document.getElementById('dot').classList.add('on');
+      document.getElementById('statusText').textContent = 'Gmail Connected';
+      document.getElementById('scriptUrl').value = cfg.url;
+      document.getElementById('senderName').value = cfg.name;
+      updatePreview();
+    }
+
+    function openModal() { document.getElementById('modal').classList.remove('hidden'); }
+
+    function handleCV(input) {
+      const f = input.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        cvData = { base64: e.target.result.split(',')[1], name: f.name, mimeType: e.target.result.split(';')[0].replace('data:','') };
+        document.getElementById('cvname').textContent = f.name;
+        document.getElementById('cvok').style.display = 'flex';
+        document.getElementById('cvzone').style.display = 'none';
+      };
+      reader.readAsDataURL(f);
+    }
+
+    function removeCV() {
+      cvData = null;
+      document.getElementById('cvfile').value = '';
+      document.getElementById('cvok').style.display = 'none';
+      document.getElementById('cvzone').style.display = 'block';
+    }
+
+    function addRow() {
+      rowId++;
+      const id = rowId;
+      const el = document.createElement('div');
+      el.className = 'rrow'; el.id = `r${id}`;
+      el.innerHTML = `
+        <div class="field" style="margin:0">
+          <label>First Name</label>
+          <input type="text" id="rn${id}" placeholder="Name" oninput="updatePreview()">
+        </div>
+        <div class="field" style="margin:0">
+          <label>Firm Name</label>
+          <input type="text" id="rf${id}" placeholder="Firm">
+        </div>
+        <div class="field" style="margin:0">
+          <label>Email</label>
+          <input type="email" id="re${id}" placeholder="email@firm.com">
+        </div>
+        <button class="btn-del" onclick="delRow(${id})">✕</button>
+      `;
+      document.getElementById('rlist').appendChild(el);
+      updateCount();
+    }
+
+    function delRow(id) { document.getElementById(`r${id}`).remove(); updateCount(); updatePreview(); }
+    function updateCount() { document.getElementById('rcnt').textContent = document.querySelectorAll('.rrow').length; }
+
+    function updatePreview() {
+      const b = document.getElementById('body').value.trim();
+      const name = document.getElementById(`rn${rowId}`)?.value || 'Recipient';
+      const sender = cfg.name || 'Akshit Sharma';
+      if (!b) { document.getElementById('prev').innerHTML = '<span style="color:var(--text-dim)">Preview will appear here...</span>'; return; }
+      const content = `<span class="hi">Dear ${name},</span><br><br>${b.replace(/\n/g,'<br>')}<br><br><span class="hi">Warm Regards,<br>${sender}<br>+91 9871026122</span>`;
+      document.getElementById('prev').innerHTML = content;
+    }
+
+    function updateCC(el) { document.getElementById('cc').textContent = `${el.value.length}/150`; }
+
+    async function sendAll() {
+      if (!cfg.url) { showToast('e','Setup Script URL first'); openModal(); return; }
+      const subj = document.getElementById('subj').value.trim();
+      const body = document.getElementById('body').value.trim();
+      const recs = [...document.querySelectorAll('.rrow')].map(r => {
+        const id = r.id.replace('r','');
+        return { name: document.getElementById(`rn${id}`).value, firm: document.getElementById(`rf${id}`).value, email: document.getElementById(`re${id}`).value };
+      }).filter(r => r.email);
+
+      if (!subj || !body || !recs.length) { showToast('e','Fill in all required fields'); return; }
+
+      const btn = document.getElementById('sendBtn');
+      btn.disabled = true; btn.innerHTML = 'Sending...';
+      document.getElementById('prog').classList.add('show');
+
+      // Load existing tracker records
+      let trackerRecords = [];
+      try { trackerRecords = JSON.parse(localStorage.getItem('ca_tracker') || '[]'); } catch(e) {}
+
+      let sent = 0;
+      for (let i = 0; i < recs.length; i++) {
+        const r = recs[i];
+        const log = document.getElementById('log');
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `<span>⏳</span> <span>Sending to ${r.email}...</span>`;
+        log.appendChild(item);
+        log.scrollTop = log.scrollHeight;
+
+        let success = false;
+        try {
+          const payload = { to_email: r.email, to_name: r.name, firm_name: r.firm, subject: subj, message: `Dear ${r.name || 'Sir/Madam'},\n\n${body}\n\nWarm Regards,\n${cfg.name}\n+91 9871026122`, from_name: cfg.name };
+          if (cvData) { payload.cv_base64 = cvData.base64; payload.cv_name = cvData.name; payload.cv_mimetype = cvData.mimeType; }
+
+          await fetch(cfg.url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+          item.innerHTML = `<span>✅</span> <span>Sent to ${r.email}</span>`;
+          sent++;
+          success = true;
+        } catch (e) {
+          item.innerHTML = `<span>❌</span> <span style="color:#f87171">Failed for ${r.email}</span>`;
+        }
+
+        // Save to tracker regardless of outcome
+        trackerRecords.push({
+          id: Date.now() + '_' + i,
+          name: r.name || '',
+          firm: r.firm || '',
+          domain: r.firm ? r.firm.split(' ')[0] : 'General',
+          email: r.email,
+          status: success ? 'Sent' : 'Failed',
+          cvAttached: !!cvData,
+          sentAt: new Date().toISOString(),
+          replyStatus: 'Awaiting',
+          notes: ''
+        });
+        localStorage.setItem('ca_tracker', JSON.stringify(trackerRecords));
+
+        document.getElementById('pbar').style.width = `${((i+1)/recs.length)*100}%`;
+        document.getElementById('pfrac').textContent = `${i+1}/${recs.length}`;
+        document.getElementById('plabel').textContent = `Sending ${i+1} of ${recs.length}...`;
+      }
+
+      btn.disabled = false; btn.innerHTML = '🚀 Send All';
+      document.getElementById('plabel').textContent = 'Done!';
+      showToast('s', `✅ Completed! ${sent}/${recs.length} emails sent.`);
+    }
+
+    let _tt;
+    function showToast(type, msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('tmsg').textContent = msg;
+      t.className = `toast ${type} show`;
+      clearTimeout(_tt);
+      _tt = setTimeout(() => t.classList.remove('show'), 3500);
+    }
+  </script>
+</body>
+</html>
