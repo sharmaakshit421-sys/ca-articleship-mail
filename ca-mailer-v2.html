@@ -22,6 +22,8 @@
     --green: #3fb950;
     --success-bg: rgba(63, 185, 80, 0.1);
     --error-bg: rgba(248, 81, 73, 0.1);
+    --sidebar-w: 260px;
+    --topbar-h: 56px;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,17 +35,19 @@
     display: flex;
   }
 
-  /* ─── SIDEBAR ─── */
+  /* ─── SIDEBAR (desktop) ─── */
   aside {
-    width: 260px;
+    width: var(--sidebar-w);
     background: var(--sidebar);
     border-right: 1px solid var(--border);
     padding: 24px;
     display: flex;
     flex-direction: column;
     position: fixed;
+    top: 0; left: 0;
     height: 100vh;
-    z-index: 100;
+    z-index: 200;
+    transition: transform 0.3s ease;
   }
   .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
   .logo {
@@ -51,10 +55,10 @@
     background: var(--accent);
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: white;
+    font-weight: 700; color: white; flex-shrink: 0;
   }
   .brand-name { font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
-  
+
   nav { flex: 1; }
   .nav-item {
     display: flex; align-items: center; gap: 12px;
@@ -76,19 +80,56 @@
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
   .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
 
+  /* Overlay for mobile sidebar */
+  .sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 150;
+  }
+  .sidebar-overlay.show { display: block; }
+
+  /* ─── MOBILE TOP BAR ─── */
+  .topbar {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    background: var(--sidebar);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 0 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; }
+  .topbar-brand .logo { width: 28px; height: 28px; font-size: 12px; }
+  .topbar-brand span { font-weight: 700; font-size: 16px; }
+  .hamburger {
+    background: none; border: none; color: var(--text);
+    cursor: pointer; padding: 6px; border-radius: 6px;
+    display: flex; flex-direction: column; gap: 5px;
+    transition: background 0.2s;
+  }
+  .hamburger:hover { background: var(--card); }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.3s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
   /* ─── MAIN CONTENT ─── */
   main {
     flex: 1;
-    margin-left: 260px;
+    margin-left: var(--sidebar-w);
     padding: 40px 60px;
-    max-width: 1200px;
+    max-width: calc(1200px + var(--sidebar-w));
+    width: 100%;
   }
 
-  header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; }
   .welcome h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
   .welcome p { color: var(--text-muted); font-size: 14px; }
 
-  .actions { display: flex; gap: 12px; }
+  .actions { display: flex; gap: 12px; flex-shrink: 0; }
   .btn {
     padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
     cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
@@ -107,7 +148,7 @@
     border-radius: 16px; padding: 24px; margin-bottom: 24px;
   }
   .section-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-  
+
   /* ─── FORMS ─── */
   .field { margin-bottom: 20px; }
   .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
@@ -115,18 +156,18 @@
   input, textarea {
     width: 100%; background: var(--bg); border: 1px solid var(--border);
     border-radius: 8px; padding: 12px 14px; color: var(--text);
-    font-family: inherit; font-size: 14px; outline: none; transition: all 0.2s;
+    font-family: inherit; font-size: 16px; /* 16px prevents iOS zoom */ outline: none; transition: all 0.2s;
   }
   input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
   textarea { min-height: 200px; line-height: 1.6; resize: vertical; }
-  
+
   .char-count { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
 
   /* ─── PREVIEW ─── */
   .preview-box {
     background: var(--bg); border: 1px solid var(--border);
     border-radius: 12px; padding: 20px; font-size: 14px; line-height: 1.6;
-    min-height: 300px; color: var(--text-muted);
+    min-height: 200px; color: var(--text-muted);
   }
   .preview-box .hi { color: var(--accent); font-weight: 600; }
 
@@ -136,8 +177,12 @@
     border-radius: 12px; padding: 16px; margin-bottom: 12px;
     display: grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap: 12px; align-items: end;
   }
-  .rrow .btn-del { color: var(--text-dim); background: none; border: none; cursor: pointer; padding: 8px; }
-  .rrow .btn-del:hover { color: var(--red); }
+  .rrow .btn-del {
+    color: var(--text-dim); background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer; padding: 8px 10px; font-size: 14px;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .rrow .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--error-bg); }
 
   /* ─── CV ZONE ─── */
   .cv-zone {
@@ -148,12 +193,13 @@
   .cv-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
   .cv-zone input { display: none; }
   .cv-icon { font-size: 32px; margin-bottom: 12px; display: block; }
-  
+
   /* ─── MODAL ─── */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.8);
     backdrop-filter: blur(4px); z-index: 1000;
     display: flex; align-items: center; justify-content: center;
+    padding: 16px;
   }
   .modal-overlay.hidden { display: none; }
   .modal {
@@ -163,7 +209,7 @@
 
   /* ─── TOAST ─── */
   .toast {
-    position: fixed; bottom: 24px; right: 24px;
+    position: fixed; bottom: 24px; right: 24px; left: 24px; max-width: 400px; margin: 0 auto;
     padding: 12px 20px; border-radius: 8px;
     background: var(--card); border: 1px solid var(--border);
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -183,15 +229,108 @@
   .log { max-height: 200px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 12px; background: var(--bg); border-radius: 8px; }
   .log-item { margin-bottom: 6px; display: flex; gap: 8px; }
 
+  /* ─── BOTTOM SEND BAR (mobile only) ─── */
+  .bottom-bar {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--sidebar);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    gap: 10px;
+    z-index: 90;
+  }
+  .bottom-bar .btn { flex: 1; justify-content: center; padding: 14px; font-size: 15px; }
+
+  /* ════════════════════════
+     RESPONSIVE BREAKPOINTS
+  ════════════════════════ */
+
+  /* ─── TABLET (≤1100px) ─── */
   @media (max-width: 1100px) {
     .grid { grid-template-columns: 1fr; }
     main { padding: 30px; }
+  }
+
+  /* ─── MOBILE (≤768px) ─── */
+  @media (max-width: 768px) {
+    /* Show topbar, hide sidebar by default */
+    .topbar { display: flex; }
+    aside {
+      transform: translateX(-100%);
+      top: 0;
+    }
+    aside.open { transform: translateX(0); }
+
+    /* Push main below topbar, remove sidebar margin */
+    main {
+      margin-left: 0;
+      padding: 16px;
+      padding-top: calc(var(--topbar-h) + 16px);
+      padding-bottom: 90px; /* space for bottom bar */
+    }
+
+    /* Header: stack on mobile */
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .welcome h1 { font-size: 22px; }
+    .actions { display: none; } /* moved to bottom bar */
+
+    .section-card { padding: 16px; border-radius: 12px; }
+    .section-title { font-size: 15px; margin-bottom: 16px; }
+
+    /* Recipients: stack fields vertically */
+    .rrow {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+    }
+    .rrow > div:nth-child(3) { grid-column: 1 / -1; }
+    .rrow .btn-del { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
+
+    /* Textarea bigger on mobile for easier typing */
+    textarea { min-height: 160px; font-size: 16px; }
+
+    /* Show bottom send bar */
+    .bottom-bar { display: flex; }
+
+    /* Modal full-width on mobile */
+    .modal { padding: 24px; border-radius: 16px; }
+
+    /* Preview only shows when body has content */
+    .preview-box { min-height: 120px; }
+  }
+
+  /* ─── SMALL MOBILE (≤380px) ─── */
+  @media (max-width: 380px) {
+    .rrow {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+    .rrow > div:nth-child(3) { grid-column: 1; }
+    .rrow .btn-del { grid-column: 1; grid-row: 1; justify-self: end; }
   }
 </style>
 </head>
 <body>
 
-  <aside>
+  <!-- Mobile top bar -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="logo">CA</div>
+      <span>Articleship Portal</span>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <aside id="sidebar">
     <div class="brand">
       <div class="logo">CA</div>
       <div class="brand-name">Articleship Portal</div>
@@ -209,6 +348,12 @@
       </div>
     </div>
   </aside>
+
+  <!-- Bottom bar for mobile send actions -->
+  <div class="bottom-bar">
+    <button class="btn btn-secondary" onclick="openModal()">⚙️ Config</button>
+    <button class="btn btn-primary" onclick="sendAll()">🚀 Send All</button>
+  </div>
 
   <main>
     <header>
@@ -309,6 +454,20 @@
     let rowId = 0;
     let cvData = null;
 
+    function toggleSidebar() {
+      const s = document.getElementById('sidebar');
+      const o = document.getElementById('sidebarOverlay');
+      const h = document.getElementById('hamburger');
+      const isOpen = s.classList.toggle('open');
+      o.classList.toggle('show', isOpen);
+      h.classList.toggle('open', isOpen);
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
     window.addEventListener('load', () => {
       const s = localStorage.getItem('ca_gas_cfg');
       if (s) { try { cfg = JSON.parse(s); applyConfig(); document.getElementById('modal').classList.add('hidden'); } catch(e){} }
@@ -366,88 +525,4 @@
       const id = rowId;
       const el = document.createElement('div');
       el.className = 'rrow'; el.id = `r${id}`;
-      el.innerHTML = `
-        <div class="field" style="margin:0">
-          <label>First Name</label>
-          <input type="text" id="rn${id}" placeholder="Name" oninput="updatePreview()">
-        </div>
-        <div class="field" style="margin:0">
-          <label>Firm Name</label>
-          <input type="text" id="rf${id}" placeholder="Firm">
-        </div>
-        <div class="field" style="margin:0">
-          <label>Email</label>
-          <input type="email" id="re${id}" placeholder="email@firm.com">
-        </div>
-        <button class="btn-del" onclick="delRow(${id})">✕</button>
-      `;
-      document.getElementById('rlist').appendChild(el);
-      updateCount();
-    }
-
-    function delRow(id) { document.getElementById(`r${id}`).remove(); updateCount(); updatePreview(); }
-    function updateCount() { document.getElementById('rcnt').textContent = document.querySelectorAll('.rrow').length; }
-
-    function updatePreview() {
-      const b = document.getElementById('body').value.trim();
-      const name = document.getElementById(`rn${rowId}`)?.value || 'Recipient';
-      const sender = cfg.name || 'Akshit Sharma';
-      if (!b) { document.getElementById('prev').innerHTML = '<span style="color:var(--text-dim)">Preview will appear here...</span>'; return; }
-      const content = `<span class="hi">Dear ${name},</span><br><br>${b.replace(/\n/g,'<br>')}<br><br><span class="hi">Warm Regards,<br>${sender}<br>+91 9871026122</span>`;
-      document.getElementById('prev').innerHTML = content;
-    }
-
-    function updateCC(el) { document.getElementById('cc').textContent = `${el.value.length}/150`; }
-
-    async function sendAll() {
-      if (!cfg.url) { showToast('e','Setup Script URL first'); openModal(); return; }
-      const subj = document.getElementById('subj').value.trim();
-      const body = document.getElementById('body').value.trim();
-      const recs = [...document.querySelectorAll('.rrow')].map(r => {
-        const id = r.id.replace('r','');
-        return { name: document.getElementById(`rn${id}`).value, firm: document.getElementById(`rf${id}`).value, email: document.getElementById(`re${id}`).value };
-      }).filter(r => r.email);
-
-      if (!subj || !body || !recs.length) { showToast('e','Fill in all required fields'); return; }
-
-      const btn = document.getElementById('sendBtn');
-      btn.disabled = true; btn.innerHTML = 'Sending...';
-      document.getElementById('prog').classList.add('show');
-      
-      let sent = 0;
-      for (let i = 0; i < recs.length; i++) {
-        const r = recs[i];
-        const log = document.getElementById('log');
-        const item = document.createElement('div');
-        item.className = 'log-item';
-        item.innerHTML = `<span>⏳</span> <span>Sending to ${r.email}...</span>`;
-        log.appendChild(item);
-
-        try {
-          const payload = { to_email: r.email, to_name: r.name, firm_name: r.firm, subject: subj, message: `Dear ${r.name || 'Sir/Madam'},\n\n${body}\n\nWarm Regards,\n${cfg.name}\n+91 9871026122`, from_name: cfg.name };
-          if (cvData) { payload.cv_base64 = cvData.base64; payload.cv_name = cvData.name; payload.cv_mimetype = cvData.mimeType; }
-          
-          await fetch(cfg.url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-          item.innerHTML = `<span>✅</span> <span>Sent to ${r.email}</span>`;
-          sent++;
-        } catch (e) {
-          item.innerHTML = `<span>❌</span> <span style="color:var(--red)">Failed for ${r.email}</span>`;
-        }
-        
-        document.getElementById('pbar').style.width = `${((i+1)/recs.length)*100}%`;
-        document.getElementById('pfrac').textContent = `${i+1}/${recs.length}`;
-      }
-      
-      btn.disabled = false; btn.innerHTML = '🚀 Send All';
-      showToast('s', `Completed! ${sent} emails sent.`);
-    }
-
-    function showToast(type, msg) {
-      const t = document.getElementById('toast');
-      t.className = `toast ${type} show`;
-      document.getElementById('tmsg').textContent = msg;
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
-  </script>
-</body>
-</html>
+      el.inner
