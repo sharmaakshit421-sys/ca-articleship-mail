@@ -5,7 +5,7 @@ This repository contains tools to help you send personalised articleship applica
 ### 🚀 Live Websites
 Click the links below to open the tools directly in your browser:
 
-1.  **[CA Bulk Mailer](https://sharmaakshit421-sys.github.io/ca-articleship-mail/ca-mailer-v2.html)** - Use this to send personalised emails to multiple firms.
+1.  **[CA Bulk Mailer](https://sharmaakshit421-sys.github.io/ca-articleship-mail/ca-mailer-v3-2.html)** - Use this to send personalised emails to multiple firms.
 2.  **[Mailer Tracker](https://sharmaakshit421-sys.github.io/ca-articleship-mail/ca-tracker.html)** - Use this to track your sent applications.
 
 ---
