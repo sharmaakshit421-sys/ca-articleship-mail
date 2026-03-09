@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CA Articleship — Bulk Mailer</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg: #0d0c09;
@@ -162,7 +163,7 @@
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
     background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.4;
   }
-  .section-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
 
   /* ─── FORMS ─── */
   .field { margin-bottom: 20px; }
@@ -243,106 +244,34 @@
   .log { max-height: 200px; overflow-y: auto; font-family: 'DM Mono', monospace; font-size: 12px; padding: 12px; background: var(--bg); border-radius: 8px; }
   .log-item { margin-bottom: 6px; display: flex; gap: 8px; }
 
-  /* ─── BOTTOM SEND BAR (mobile only) ─── */
-  .bottom-bar {
-    display: none;
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--sidebar);
-    border-top: 1px solid var(--border);
-    padding: 12px 16px;
-    gap: 10px;
-    z-index: 90;
-  }
-  .bottom-bar .btn { flex: 1; justify-content: center; padding: 14px; font-size: 15px; }
-
-  /* ════════════════════════
-     RESPONSIVE BREAKPOINTS
-  ════════════════════════ */
-
-  /* ─── TABLET (≤1100px) ─── */
   @media (max-width: 1100px) {
     .grid { grid-template-columns: 1fr; }
-    main { padding: 30px; }
-  }
-
-  /* ─── MOBILE (≤768px) ─── */
-  @media (max-width: 768px) {
-    /* Show topbar, hide sidebar by default */
-    .topbar { display: flex; }
-    aside {
-      transform: translateX(-100%);
-      top: 0;
-    }
+    main { margin-left: 0; padding: 80px 20px 100px; }
+    aside { transform: translateX(-100%); }
     aside.open { transform: translateX(0); }
-
-    /* Push main below topbar, remove sidebar margin */
-    main {
-      margin-left: 0;
-      padding: 16px;
-      padding-top: calc(var(--topbar-h) + 16px);
-      padding-bottom: 90px; /* space for bottom bar */
-    }
-
-    /* Header: stack on mobile */
-    header {
-      flex-direction: column;
-      align-items: flex-start;
-      margin-bottom: 20px;
-      gap: 12px;
-    }
-    .welcome h1 { font-size: 22px; }
-    .actions { display: none; } /* moved to bottom bar */
-
-    .section-card { padding: 16px; border-radius: 12px; }
-    .section-title { font-size: 15px; margin-bottom: 16px; }
-
-    /* Recipients: stack fields vertically */
-    .rrow {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto auto;
-    }
-    .rrow > div:nth-child(3) { grid-column: 1 / -1; }
-    .rrow .btn-del { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
-
-    /* Textarea bigger on mobile for easier typing */
-    textarea { min-height: 160px; font-size: 16px; }
-
-    /* Show bottom send bar */
-    .bottom-bar { display: flex; }
-
-    /* Modal full-width on mobile */
-    .modal { padding: 24px; border-radius: 16px; }
-
-    /* Preview only shows when body has content */
-    .preview-box { min-height: 120px; }
-  }
-
-  /* ─── SMALL MOBILE (≤380px) ─── */
-  @media (max-width: 380px) {
-    .rrow {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
-    }
-    .rrow > div:nth-child(3) { grid-column: 1; }
-    .rrow .btn-del { grid-column: 1; grid-row: 1; justify-self: end; }
+    .topbar { display: flex; }
+    header { flex-direction: column; }
+    .actions { width: 100%; }
+    .btn { flex: 1; justify-content: center; }
+    .rrow { grid-template-columns: 1fr 1fr; }
+    .rrow .field:nth-child(3) { grid-column: span 2; }
+    .rrow .btn-del { grid-column: span 2; width: 100%; }
   }
 </style>
 </head>
 <body>
 
-  <!-- Mobile top bar -->
+  <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
   <div class="topbar">
     <div class="topbar-brand">
       <div class="logo">CA</div>
       <span>Articleship Portal</span>
     </div>
-    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Open menu">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
       <span></span><span></span><span></span>
     </button>
   </div>
-
-  <!-- Sidebar overlay (mobile) -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
   <aside id="sidebar">
     <div class="brand">
@@ -363,12 +292,6 @@
     </div>
   </aside>
 
-  <!-- Bottom bar for mobile send actions -->
-  <div class="bottom-bar">
-    <button class="btn btn-secondary" onclick="openModal()">⚙️ Config</button>
-    <button class="btn btn-primary" onclick="sendAll()">🚀 Send All</button>
-  </div>
-
   <main>
     <header>
       <div class="welcome">
@@ -388,7 +311,7 @@
           <div class="field">
             <label>Subject Line</label>
             <div class="input-wrap">
-              <input type="text" id="subj" maxlength="150" oninput="updateCC(this)" value="Application for CA Articleship - Akshit Sharma">
+              <input type="text" id="subj" maxlength="150" oninput="updateCC(this)">
               <span class="char-count" id="cc">0/150</span>
             </div>
           </div>
@@ -399,16 +322,22 @@
         </div>
 
         <div class="section-card">
-          <div class="section-title">👁️ Live Preview</div>
-          <div class="preview-box" id="prev">
-            <span style="color: var(--text-dim)">Preview will appear here as you type...</span>
+          <div class="section-title">
+            <span>👥 Recipients (<span id="rcnt">0</span>)</span>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="document.getElementById('excelFile').click()">📊 Import Excel</button>
+              <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="addRow()">＋ Add Manual</button>
+            </div>
           </div>
-        </div>
-
-        <div class="section-card">
-          <div class="section-title">👥 Recipients (<span id="rcnt">0</span>)</div>
+          
+          <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcel(this)">
+          
           <div id="rlist"></div>
-          <button class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="addRow()">＋ Add Recipient</button>
+          
+          <div id="emptyState" style="text-align: center; padding: 40px; color: var(--text-dim);">
+            <div style="font-size: 32px; margin-bottom: 12px;">📬</div>
+            <p>No recipients added yet.<br>Upload an Excel or add manually to start.</p>
+          </div>
         </div>
       </div>
 
@@ -425,6 +354,13 @@
             <span style="color: var(--green)">✅</span>
             <div style="flex: 1; font-size: 13px; font-weight: 500;" id="cvname"></div>
             <button onclick="removeCV()" style="background: none; border: none; color: var(--text-dim); cursor: pointer;">✕</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title">👁️ Live Preview</div>
+          <div class="preview-box" id="prev">
+            <span style="color: var(--text-dim)">Preview will appear here as you type...</span>
           </div>
         </div>
 
@@ -468,27 +404,22 @@
     let rowId = 0;
     let cvData = null;
 
-    function toggleSidebar() {
-      const s = document.getElementById('sidebar');
-      const o = document.getElementById('sidebarOverlay');
-      const h = document.getElementById('hamburger');
-      const isOpen = s.classList.toggle('open');
-      o.classList.toggle('show', isOpen);
-      h.classList.toggle('open', isOpen);
-    }
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('sidebarOverlay').classList.remove('show');
-      document.getElementById('hamburger').classList.remove('open');
-    }
-
     window.addEventListener('load', () => {
       const s = localStorage.getItem('ca_gas_cfg');
-      if (s) { try { cfg = JSON.parse(s); applyConfig(); } catch(e){} }
-      addRow();
+      if (s) { try { cfg = JSON.parse(s); applyConfig(); document.getElementById('modal').classList.add('hidden'); } catch(e){} }
+      
       const subjInput = document.getElementById('subj');
-      if (subjInput) updateCC(subjInput);
+      if (subjInput) {
+        subjInput.value = "Application for CA Articleship - Akshit Sharma";
+        updateCC(subjInput);
+      }
     });
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('show');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
 
     function saveConfig() {
       const url = document.getElementById('scriptUrl').value.trim();
@@ -531,7 +462,48 @@
       document.getElementById('cvzone').style.display = 'block';
     }
 
-    function addRow() {
+    function handleExcel(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+
+          if (json.length === 0) {
+            showToast('e', 'Excel file is empty');
+            return;
+          }
+          
+          let imported = 0;
+          json.forEach(row => {
+            const name = row.Name || row.name || row['First Name'] || row['Full Name'] || '';
+            const email = row.Email || row.email || row['Email Address'] || '';
+            const firm = row.Firm || row.firm || row['Firm Name'] || '';
+
+            if (email) {
+              addRow(name, firm, email);
+              imported++;
+            }
+          });
+
+          showToast('s', `Successfully imported ${imported} recipients!`);
+          input.value = '';
+        } catch (err) {
+          console.error(err);
+          showToast('e', 'Error parsing Excel file');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function addRow(name = '', firm = '', email = '') {
+      document.getElementById('emptyState').style.display = 'none';
       rowId++;
       const id = rowId;
       const el = document.createElement('div');
@@ -539,28 +511,43 @@
       el.innerHTML = `
         <div class="field" style="margin:0">
           <label>First Name</label>
-          <input type="text" id="rn${id}" placeholder="Name" oninput="updatePreview()">
+          <input type="text" id="rn${id}" placeholder="Name" value="${name}" oninput="updatePreview()">
         </div>
         <div class="field" style="margin:0">
           <label>Firm Name</label>
-          <input type="text" id="rf${id}" placeholder="Firm">
+          <input type="text" id="rf${id}" placeholder="Firm" value="${firm}">
         </div>
         <div class="field" style="margin:0">
           <label>Email</label>
-          <input type="email" id="re${id}" placeholder="email@firm.com">
+          <input type="email" id="re${id}" placeholder="email@firm.com" value="${email}">
         </div>
         <button class="btn-del" onclick="delRow(${id})">✕</button>
       `;
       document.getElementById('rlist').appendChild(el);
       updateCount();
+      updatePreview();
     }
 
-    function delRow(id) { document.getElementById(`r${id}`).remove(); updateCount(); updatePreview(); }
+    function delRow(id) { 
+      document.getElementById(`r${id}`).remove(); 
+      updateCount(); 
+      updatePreview();
+      if (document.querySelectorAll('.rrow').length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+      }
+    }
+    
     function updateCount() { document.getElementById('rcnt').textContent = document.querySelectorAll('.rrow').length; }
 
     function updatePreview() {
       const b = document.getElementById('body').value.trim();
-      const name = document.getElementById(`rn${rowId}`)?.value || 'Recipient';
+      const rows = document.querySelectorAll('.rrow');
+      let name = 'Recipient';
+      if (rows.length > 0) {
+        const lastId = rows[rows.length - 1].id.replace('r', '');
+        name = document.getElementById(`rn${lastId}`)?.value || 'Recipient';
+      }
+      
       const sender = cfg.name || 'Akshit Sharma';
       if (!b) { document.getElementById('prev').innerHTML = '<span style="color:var(--text-dim)">Preview will appear here...</span>'; return; }
       const content = `<span class="hi">Dear ${name},</span><br><br>${b.replace(/\n/g,'<br>')}<br><br><span class="hi">Warm Regards,<br>${sender}<br>+91 9871026122</span>`;
@@ -583,11 +570,7 @@
       const btn = document.getElementById('sendBtn');
       btn.disabled = true; btn.innerHTML = 'Sending...';
       document.getElementById('prog').classList.add('show');
-
-      // Load existing tracker records
-      let trackerRecords = [];
-      try { trackerRecords = JSON.parse(localStorage.getItem('ca_tracker') || '[]'); } catch(e) {}
-
+      
       let sent = 0;
       for (let i = 0; i < recs.length; i++) {
         const r = recs[i];
@@ -596,53 +579,31 @@
         item.className = 'log-item';
         item.innerHTML = `<span>⏳</span> <span>Sending to ${r.email}...</span>`;
         log.appendChild(item);
-        log.scrollTop = log.scrollHeight;
 
-        let success = false;
         try {
           const payload = { to_email: r.email, to_name: r.name, firm_name: r.firm, subject: subj, message: `Dear ${r.name || 'Sir/Madam'},\n\n${body}\n\nWarm Regards,\n${cfg.name}\n+91 9871026122`, from_name: cfg.name };
           if (cvData) { payload.cv_base64 = cvData.base64; payload.cv_name = cvData.name; payload.cv_mimetype = cvData.mimeType; }
-
+          
           await fetch(cfg.url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
           item.innerHTML = `<span>✅</span> <span>Sent to ${r.email}</span>`;
           sent++;
-          success = true;
         } catch (e) {
-          item.innerHTML = `<span>❌</span> <span style="color:#f87171">Failed for ${r.email}</span>`;
+          item.innerHTML = `<span>❌</span> <span style="color:var(--red)">Failed for ${r.email}</span>`;
         }
-
-        // Save to tracker regardless of outcome
-        trackerRecords.push({
-          id: Date.now() + '_' + i,
-          name: r.name || '',
-          firm: r.firm || '',
-          domain: r.firm ? r.firm.split(' ')[0] : 'General',
-          email: r.email,
-          status: success ? 'Sent' : 'Failed',
-          cvAttached: !!cvData,
-          sentAt: new Date().toISOString(),
-          replyStatus: 'Awaiting',
-          notes: ''
-        });
-        localStorage.setItem('ca_tracker', JSON.stringify(trackerRecords));
-
+        
         document.getElementById('pbar').style.width = `${((i+1)/recs.length)*100}%`;
         document.getElementById('pfrac').textContent = `${i+1}/${recs.length}`;
-        document.getElementById('plabel').textContent = `Sending ${i+1} of ${recs.length}...`;
       }
-
+      
       btn.disabled = false; btn.innerHTML = '🚀 Send All';
-      document.getElementById('plabel').textContent = 'Done!';
-      showToast('s', `✅ Completed! ${sent}/${recs.length} emails sent.`);
+      showToast('s', `Completed! ${sent} emails sent.`);
     }
 
-    let _tt;
     function showToast(type, msg) {
       const t = document.getElementById('toast');
-      document.getElementById('tmsg').textContent = msg;
       t.className = `toast ${type} show`;
-      clearTimeout(_tt);
-      _tt = setTimeout(() => t.classList.remove('show'), 3500);
+      document.getElementById('tmsg').textContent = msg;
+      setTimeout(() => t.classList.remove('show'), 3000);
     }
   </script>
 </body>
