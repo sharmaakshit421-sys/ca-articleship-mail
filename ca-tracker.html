@@ -3,294 +3,286 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CA Articleship — Application Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>CA Articleship — Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0c09;
-    --card: #1c1a15;
-    --card2: #221f18;
-    --gold: #d4a84b;
-    --gold2: #e8c97a;
-    --gold-dim: rgba(212,168,75,0.15);
-    --gold-glow: rgba(212,168,75,0.06);
-    --text: #f0ead8;
-    --text-muted: #8a8070;
-    --text-dim: #5a5448;
-    --border: #2e2b22;
-    --border-gold: rgba(212,168,75,0.3);
-    --red: #c0392b;
-    --green: #27ae60;
-    --blue: #2980b9;
-    --orange: #e67e22;
-  }
+:root {
+  --bg: #080807;
+  --surface: #0f0e0b;
+  --card: #161410;
+  --card2: #1c1914;
+  --gold: #c9973a;
+  --gold2: #e8bf72;
+  --gold3: #f5dfa0;
+  --gold-glow: rgba(201,151,58,0.10);
+  --gold-rim: rgba(201,151,58,0.25);
+  --text: #ede8dc;
+  --text-2: #a09880;
+  --text-3: #5c5648;
+  --border: #252218;
+  --border2: #1e1c16;
+  --red: #bf4040;
+  --green: #3d9970;
+  --blue: #3a78bf;
+  --orange: #bf7a3a;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; overflow-x: hidden;
-  }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 40% at 10% 0%, rgba(201,151,58,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 90% 100%, rgba(201,151,58,0.04) 0%, transparent 70%);
+}
 
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 15% -5%, rgba(212,168,75,0.07) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 85% 105%, rgba(212,168,75,0.04) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
-  }
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  height: 58px; padding: 0 28px;
+  background: rgba(8,8,7,0.92); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.tl { display: flex; align-items: center; gap: 12px; }
+.logomark {
+  width: 32px; height: 32px;
+  background: linear-gradient(145deg, var(--gold), var(--gold2));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-weight: 700; font-size: 12px; color: var(--bg);
+  box-shadow: 0 0 18px rgba(201,151,58,0.18); flex-shrink: 0;
+}
+.appname { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--text); }
+.appname em { font-style: italic; color: var(--gold2); }
+.tr { display: flex; gap: 8px; }
 
-  /* ─── HEADER ─── */
-  header {
-    position: sticky; top: 0; z-index: 50;
-    border-bottom: 1px solid var(--border);
-    background: rgba(13,12,9,0.92); backdrop-filter: blur(16px);
-    padding: 0 20px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  }
+.nav-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 50px;
+  font-size: 12.5px; font-weight: 500; cursor: pointer;
+  transition: all 0.18s; text-decoration: none;
+  border: 1px solid var(--border); color: var(--text-3);
+  background: transparent;
+}
+.nav-pill:hover { border-color: var(--gold-rim); color: var(--gold2); }
+.nav-pill.active { background: var(--gold-glow); border-color: var(--gold-rim); color: var(--gold2); }
 
-  .hlogo { display: flex; align-items: center; gap: 10px; }
-  .hbadge {
-    width: 34px; height: 34px;
-    background: linear-gradient(135deg, var(--gold), var(--gold2));
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 15px; color: var(--bg);
-  }
-  .hname { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; }
-  .hname span { color: var(--gold); }
+/* ── PAGE ── */
+.page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
 
-  .hright { display: flex; align-items: center; gap: 8px; }
+/* ── HERO ── */
+.hero { margin-bottom: 32px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 2.5px; color: var(--gold);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.eyebrow::before { content: ''; width: 18px; height: 1px; background: var(--gold); display: block; }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; line-height: 1.1; }
+.hero h1 em { font-style: italic; color: var(--gold2); }
+.hero p { font-size: 13px; color: var(--text-2); margin-top: 6px; }
+.hero-actions { display: flex; gap: 9px; flex-wrap: wrap; }
 
-  .hbtn {
-    display: flex; align-items: center; gap: 6px;
-    background: none; border: 1px solid var(--border);
-    border-radius: 8px; padding: 6px 12px;
-    font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-muted);
-    cursor: pointer; transition: all 0.2s; text-decoration: none;
-  }
-  .hbtn:hover { border-color: var(--border-gold); color: var(--gold); }
-  .hbtn.active { border-color: var(--border-gold); color: var(--gold); background: var(--gold-dim); }
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; border-radius: var(--radius-sm); padding: 9px 17px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; white-space: nowrap;
+}
+.btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: var(--bg); }
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,151,58,0.25); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-2); }
+.btn-outline:hover { border-color: var(--gold-rim); color: var(--gold2); background: var(--gold-glow); }
+.btn-danger { background: rgba(191,64,64,0.08); border: 1px solid rgba(191,64,64,0.2); color: #e08080; }
+.btn-danger:hover { background: var(--red); color: white; border-color: var(--red); }
 
-  /* ─── MAIN ─── */
-  .main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 36px 16px 80px; }
+/* ── STATS ── */
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 28px; }
+.stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 16px; text-align: center;
+  position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s;
+}
+.stat:hover { border-color: var(--gold-rim); transform: translateY(-1px); }
+.stat::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-rim), transparent); opacity: 0.5;
+}
+.stat-num {
+  font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; line-height: 1;
+  margin-bottom: 5px;
+}
+.stat-num.g  { color: var(--gold2); }
+.stat-num.gr { color: #5ecfa0; }
+.stat-num.r  { color: #f08080; }
+.stat-num.b  { color: #7ab8f5; }
+.stat-num.o  { color: #f5b56a; }
+.stat-label { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 600; }
 
-  /* ─── HERO ─── */
-  .hero { margin-bottom: 32px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-  .hero-left {}
-  .eyebrow {
-    display: flex; align-items: center; gap: 8px;
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    text-transform: uppercase; letter-spacing: 2px; color: var(--gold); margin-bottom: 8px;
-  }
-  .eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--gold); }
-  .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 700; line-height: 1.1; }
-  .hero h1 em { font-style: italic; color: var(--gold); }
-  .hero p { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+/* ── FILTERS ── */
+.filter-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.search-box {
+  position: relative; flex: 1; min-width: 220px;
+}
+.search-box input {
+  width: 100%; background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 10px 14px 10px 36px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; color: var(--text); outline: none;
+  transition: border-color 0.18s; -webkit-appearance: none;
+}
+.search-box input:focus { border-color: var(--gold-rim); }
+.search-box input::placeholder { color: var(--text-3); }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; pointer-events: none; }
 
-  .hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 8px 14px; background: var(--card); border: 1px solid var(--border2);
+  border-radius: 50px; font-size: 12px; color: var(--text-3); cursor: pointer;
+  transition: all 0.18s; white-space: nowrap; font-family: 'Outfit', sans-serif; font-weight: 500;
+}
+.chip:hover { border-color: var(--gold-rim); color: var(--gold2); }
+.chip.on { background: var(--gold-glow); border-color: var(--gold-rim); color: var(--gold2); }
 
-  /* ─── STATS ─── */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .stat {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 14px; padding: 18px 16px; text-align: center;
-    position: relative; overflow: hidden; transition: border-color 0.2s;
-  }
-  .stat:hover { border-color: rgba(212,168,75,0.2); }
-  .stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.3; }
-  .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
-  .stat-num.gold { color: var(--gold); }
-  .stat-num.green { color: #4ade80; }
-  .stat-num.red { color: #f87171; }
-  .stat-num.blue { color: #60a5fa; }
-  .stat-num.orange { color: #fb923c; }
-  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+/* ── TABLE CARD ── */
+.table-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; position: relative;
+}
+.table-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-rim), transparent); opacity: 0.6; z-index: 1;
+}
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 780px; }
 
-  /* ─── FILTERS ─── */
-  .filters {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
+thead th {
+  padding: 12px 16px; text-align: left; background: var(--card2);
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--text-3); white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+thead th:first-child { padding-left: 22px; }
+thead th:last-child { padding-right: 22px; }
 
-  .search-wrap { position: relative; flex: 1; min-width: 200px; }
-  .search-wrap input {
-    width: 100%; background: var(--card); border: 1.5px solid var(--border);
-    border-radius: 10px; padding: 10px 14px 10px 36px;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none;
-    transition: border-color 0.2s;
-  }
-  .search-wrap input:focus { border-color: var(--gold); }
-  .search-wrap input::placeholder { color: var(--text-dim); }
-  .search-wrap .sico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+tbody tr {
+  border-bottom: 1px solid var(--border2);
+  transition: background 0.15s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--card2); }
 
-  .filter-btn {
-    padding: 9px 14px; background: var(--card); border: 1.5px solid var(--border);
-    border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 12px;
-    color: var(--text-muted); cursor: pointer; transition: all 0.2s; white-space: nowrap;
-  }
-  .filter-btn:hover { border-color: var(--border-gold); color: var(--gold); }
-  .filter-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+td {
+  padding: 13px 16px; font-size: 12.5px; color: var(--text-2);
+  vertical-align: middle;
+}
+td:first-child { padding-left: 22px; }
+td:last-child { padding-right: 22px; }
 
-  /* ─── TABLE WRAPPER ─── */
-  .table-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 18px; overflow: hidden;
-    position: relative;
-  }
-  .table-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.4; z-index: 1; }
+.td-idx { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); }
+.td-name { color: var(--text); font-weight: 500; }
+.td-firm { color: var(--text); }
+.td-email { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); }
+.td-date { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-3); line-height: 1.5; }
 
-  .table-wrap { overflow-x: auto; }
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.b-sent     { background: rgba(61,153,112,0.10); border: 1px solid rgba(61,153,112,0.25); color: #5ecfa0; }
+.b-failed   { background: rgba(191,64,64,0.10);  border: 1px solid rgba(191,64,64,0.25);  color: #f08080; }
+.b-awaiting { background: rgba(201,151,58,0.10); border: 1px solid rgba(201,151,58,0.25); color: var(--gold2); }
+.b-replied  { background: rgba(58,120,191,0.10); border: 1px solid rgba(58,120,191,0.25); color: #7ab8f5; }
+.b-rejected { background: rgba(191,64,64,0.08);  border: 1px solid rgba(191,64,64,0.18);  color: #e08080; }
+.b-interview{ background: rgba(94,207,160,0.10); border: 1px solid rgba(94,207,160,0.25); color: #5ecfa0; }
+.b-cv       { background: rgba(201,151,58,0.08); border: 1px solid var(--gold-rim); color: var(--gold2); }
 
-  table { width: 100%; border-collapse: collapse; min-width: 700px; }
+/* Inline controls */
+.status-sel {
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 5px 8px;
+  font-family: 'Outfit', sans-serif; font-size: 12px; color: var(--text);
+  outline: none; cursor: pointer; transition: border-color 0.18s; max-width: 130px;
+}
+.status-sel:focus { border-color: var(--gold-rim); }
 
-  thead tr { border-bottom: 1px solid var(--border); }
-  thead th {
-    padding: 14px 16px; text-align: left;
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.8px; color: var(--text-muted);
-    white-space: nowrap; background: var(--card2);
-  }
-  thead th:first-child { padding-left: 20px; }
-  thead th:last-child { padding-right: 20px; }
+.notes-inp {
+  background: transparent; border: none; border-bottom: 1px solid var(--border);
+  padding: 3px 0; font-family: 'Outfit', sans-serif; font-size: 12px;
+  color: var(--text-2); outline: none; width: 140px; transition: border-color 0.18s;
+}
+.notes-inp:focus { border-color: var(--gold2); color: var(--text); }
+.notes-inp::placeholder { color: var(--text-3); }
 
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-    animation: rowIn 0.3s ease;
-  }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--card2); }
+.del-btn {
+  background: none; border: none; cursor: pointer; padding: 4px 6px;
+  color: var(--text-3); border-radius: 5px; font-size: 14px; transition: color 0.18s;
+}
+.del-btn:hover { color: var(--red); }
 
-  @keyframes rowIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+/* Empty state */
+.empty {
+  padding: 64px 24px; text-align: center;
+}
+.empty-icon { font-size: 44px; margin-bottom: 14px; display: block; opacity: 0.35; }
+.empty h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+.empty p { font-size: 13px; color: var(--text-3); }
 
-  td {
-    padding: 14px 16px; font-size: 13px; color: var(--text-muted);
-    vertical-align: middle;
-  }
-  td:first-child { padding-left: 20px; }
-  td:last-child { padding-right: 20px; }
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+  padding: 12px 22px; border-radius: 50px;
+  display: flex; align-items: center; gap: 10px; z-index: 3000;
+  font-size: 13px; font-weight: 500; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  opacity: 0; transition: all 0.3s cubic-bezier(.4,0,.2,1); white-space: nowrap; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.s { background: rgba(61,153,112,0.15); border: 1px solid rgba(61,153,112,0.35); color: #5ecfa0; }
+.toast.e { background: rgba(191,64,64,0.15);  border: 1px solid rgba(191,64,64,0.35);  color: #f08080; }
+.toast.i { background: var(--gold-glow); border: 1px solid var(--gold-rim); color: var(--gold2); }
 
-  .td-name { color: var(--text); font-weight: 500; }
-  .td-firm { color: var(--text); }
-  .td-domain {
-    font-family: 'DM Mono', monospace; font-size: 11px;
-    color: var(--gold); background: var(--gold-dim);
-    border: 1px solid var(--border-gold);
-    padding: 2px 8px; border-radius: 6px; white-space: nowrap;
-    display: inline-block;
-  }
-  .td-email { font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--text-muted); }
-  .td-date { font-family: 'DM Mono', monospace; font-size: 11px; white-space: nowrap; }
-
-  /* Status badges */
-  .badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 600; white-space: nowrap;
-  }
-  .badge-sent { background: rgba(39,174,96,0.12); border: 1px solid rgba(39,174,96,0.3); color: #4ade80; }
-  .badge-failed { background: rgba(192,57,43,0.12); border: 1px solid rgba(192,57,43,0.3); color: #f87171; }
-  .badge-awaiting { background: rgba(212,168,75,0.12); border: 1px solid rgba(212,168,75,0.3); color: var(--gold); }
-  .badge-replied { background: rgba(41,128,185,0.12); border: 1px solid rgba(41,128,185,0.3); color: #60a5fa; }
-  .badge-rejected { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.2); color: #f87171; }
-
-  /* Reply status select */
-  .reply-select {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 7px; padding: 5px 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text);
-    outline: none; cursor: pointer; transition: border-color 0.2s;
-    max-width: 120px;
-  }
-  .reply-select:focus { border-color: var(--gold); }
-
-  /* Notes input */
-  .notes-input {
-    background: transparent; border: none; border-bottom: 1px solid var(--border);
-    padding: 4px 2px; font-family: 'DM Sans', sans-serif;
-    font-size: 12px; color: var(--text-muted); outline: none;
-    width: 130px; transition: border-color 0.2s;
-  }
-  .notes-input:focus { border-color: var(--gold); color: var(--text); }
-  .notes-input::placeholder { color: var(--text-dim); }
-
-  /* CV chip */
-  .cv-chip {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11px; padding: 2px 8px; border-radius: 6px;
-    background: rgba(212,168,75,0.1); border: 1px solid var(--border-gold);
-    color: var(--gold);
-  }
-
-  /* Delete btn */
-  .btn-row-del {
-    background: none; border: none; cursor: pointer;
-    font-size: 15px; color: var(--text-dim); padding: 4px;
-    border-radius: 5px; transition: color 0.2s;
-  }
-  .btn-row-del:hover { color: #f87171; }
-
-  /* Empty state */
-  .empty {
-    padding: 60px 20px; text-align: center;
-  }
-  .empty-ico { font-size: 48px; margin-bottom: 16px; display: block; opacity: 0.4; }
-  .empty h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-  .empty p { font-size: 13px; color: var(--text-dim); }
-
-  /* ─── BUTTONS ─── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    border: none; border-radius: 10px; padding: 9px 16px;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; text-decoration: none;
-  }
-  .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: var(--bg); }
-  .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,168,75,0.3); }
-  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-muted); }
-  .btn-outline:hover { border-color: var(--border-gold); color: var(--gold); }
-  .btn-danger { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: #f87171; }
-  .btn-danger:hover { background: var(--red); color: white; }
-
-  /* ─── TOAST ─── */
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: 0 20px 50px rgba(0,0,0,0.5); opacity: 0; transition: all 0.3s ease; white-space: nowrap; }
-  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-  .toast.s { background: rgba(39,174,96,0.15); border: 1px solid rgba(39,174,96,0.4); color: #4ade80; }
-  .toast.e { background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.4); color: #f87171; }
-  .toast.i { background: var(--gold-dim); border: 1px solid var(--border-gold); color: var(--gold); }
-
-  @media (max-width: 600px) {
-    .hero { flex-direction: column; align-items: flex-start; }
-    .hero h1 { font-size: 28px; }
-    .stats { grid-template-columns: repeat(3, 1fr); }
-  }
+@media (max-width: 700px) {
+  .stats { grid-template-columns: repeat(3, 1fr); }
+  .stats .stat:nth-child(4), .stats .stat:nth-child(5) { grid-column: span 1; }
+  .hero { flex-direction: column; align-items: flex-start; }
+  .hero h1 { font-size: 26px; }
+  .topbar { padding: 0 16px; }
+  .page { padding: 24px 14px 60px; }
+}
 </style>
 </head>
 <body>
 
-<!-- ─── HEADER ─── -->
-<header>
-  <div class="hlogo">
-    <div class="hbadge">CA</div>
-    <div class="hname">Articleship <span>Tracker</span></div>
+<!-- Topbar -->
+<header class="topbar">
+  <div class="tl">
+    <div class="logomark">CA</div>
+    <div class="appname">Articleship <em>Tracker</em></div>
   </div>
-  <div class="hright">
-    <a href="ca-mailer-v3.html" class="hbtn">✍️ Mailer</a>
-    <button class="hbtn active">📊 Tracker</button>
+  <div class="tr">
+    <a href="ca-mailer-v3.html" class="nav-pill">✉️ Mailer</a>
+    <span class="nav-pill active">📊 Tracker</span>
   </div>
 </header>
 
-<!-- ─── MAIN ─── -->
-<div class="main">
+<div class="page">
 
   <!-- Hero -->
   <div class="hero">
-    <div class="hero-left">
-      <div class="eyebrow">Application Tracker</div>
-      <h1>Your <em>Applications</em> Dashboard</h1>
-      <p>Auto-updated every time you send from the Mailer</p>
+    <div>
+      <div class="eyebrow">Dashboard</div>
+      <h1>Your <em>Applications</em></h1>
+      <p>Auto-synced from the Mailer — updated live</p>
     </div>
     <div class="hero-actions">
       <button class="btn btn-outline" onclick="exportCSV()">⬇️ Export CSV</button>
@@ -300,39 +292,24 @@
 
   <!-- Stats -->
   <div class="stats">
-    <div class="stat">
-      <div class="stat-num gold" id="s-total">0</div>
-      <div class="stat-label">Total Sent</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num green" id="s-sent">0</div>
-      <div class="stat-label">Delivered</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num red" id="s-failed">0</div>
-      <div class="stat-label">Failed</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num blue" id="s-replied">0</div>
-      <div class="stat-label">Replied</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num orange" id="s-awaiting">0</div>
-      <div class="stat-label">Awaiting</div>
-    </div>
+    <div class="stat"><div class="stat-num g"  id="s-total">0</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-num gr" id="s-sent">0</div><div class="stat-label">Delivered</div></div>
+    <div class="stat"><div class="stat-num r"  id="s-failed">0</div><div class="stat-label">Failed</div></div>
+    <div class="stat"><div class="stat-num b"  id="s-replied">0</div><div class="stat-label">Replied</div></div>
+    <div class="stat"><div class="stat-num o"  id="s-awaiting">0</div><div class="stat-label">Awaiting</div></div>
   </div>
 
   <!-- Filters -->
-  <div class="filters">
-    <div class="search-wrap">
-      <span class="sico">🔍</span>
-      <input type="text" id="searchInput" placeholder="Search by name, firm, email, domain…" oninput="renderTable()" />
+  <div class="filter-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search name, firm, email…" oninput="renderTable()">
     </div>
-    <button class="filter-btn active" data-filter="All" onclick="setFilter(this)">All</button>
-    <button class="filter-btn" data-filter="Sent" onclick="setFilter(this)">✅ Sent</button>
-    <button class="filter-btn" data-filter="Failed" onclick="setFilter(this)">❌ Failed</button>
-    <button class="filter-btn" data-filter="Replied" onclick="setFilter(this)">💬 Replied</button>
-    <button class="filter-btn" data-filter="Awaiting" onclick="setFilter(this)">⏳ Awaiting</button>
+    <button class="chip on" data-f="All"      onclick="setFilter(this)">All</button>
+    <button class="chip"    data-f="Sent"     onclick="setFilter(this)">✅ Sent</button>
+    <button class="chip"    data-f="Failed"   onclick="setFilter(this)">❌ Failed</button>
+    <button class="chip"    data-f="Replied"  onclick="setFilter(this)">💬 Replied</button>
+    <button class="chip"    data-f="Awaiting" onclick="setFilter(this)">⏳ Awaiting</button>
   </div>
 
   <!-- Table -->
@@ -342,25 +319,24 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Person Name</th>
-            <th>Firm Name</th>
-            <th>Domain</th>
+            <th>Name</th>
+            <th>Firm</th>
             <th>Email</th>
-            <th>Send Status</th>
+            <th>Status</th>
             <th>CV</th>
-            <th>Date & Time</th>
-            <th>Reply Status</th>
+            <th>Date</th>
+            <th>Reply</th>
             <th>Notes</th>
             <th></th>
           </tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
     <div class="empty hidden" id="emptyState">
-      <span class="empty-ico">📭</span>
+      <span class="empty-icon">📭</span>
       <h3>No applications yet</h3>
-      <p>Send some emails from the Mailer — they'll appear here automatically</p>
+      <p>Send emails from the Mailer — they'll appear here automatically</p>
     </div>
   </div>
 
@@ -369,88 +345,63 @@
 <div class="toast" id="toast"><span id="tmsg"></span></div>
 
 <script>
-// ─── STATE ───
 let records = [];
 let activeFilter = 'All';
 
-// ─── INIT ───
 window.addEventListener('load', () => {
-  loadRecords();
-  renderStats();
-  renderTable();
-
-  // Auto-refresh every 5 seconds in case mailer sends something
+  loadRecords(); renderStats(); renderTable();
   setInterval(() => {
     const fresh = JSON.parse(localStorage.getItem('ca_tracker') || '[]');
     if (fresh.length !== records.length) {
-      records = fresh;
-      renderStats();
-      renderTable();
+      records = fresh; renderStats(); renderTable();
     }
   }, 3000);
 });
 
-function loadRecords() {
-  records = JSON.parse(localStorage.getItem('ca_tracker') || '[]');
-}
+function loadRecords()  { records = JSON.parse(localStorage.getItem('ca_tracker') || '[]'); }
+function saveRecords()  { localStorage.setItem('ca_tracker', JSON.stringify(records)); }
 
-function saveRecords() {
-  localStorage.setItem('ca_tracker', JSON.stringify(records));
-}
-
-// ─── STATS ───
 function renderStats() {
-  const total    = records.length;
-  const sent     = records.filter(r => r.status === 'Sent').length;
-  const failed   = records.filter(r => r.status === 'Failed').length;
-  const replied  = records.filter(r => r.replyStatus === 'Replied').length;
-  const awaiting = records.filter(r => r.replyStatus === 'Awaiting' && r.status === 'Sent').length;
-
-  document.getElementById('s-total').textContent   = total;
-  document.getElementById('s-sent').textContent    = sent;
-  document.getElementById('s-failed').textContent  = failed;
-  document.getElementById('s-replied').textContent = replied;
-  document.getElementById('s-awaiting').textContent = awaiting;
+  const t = records.length;
+  const se = records.filter(r => r.status === 'Sent').length;
+  const fa = records.filter(r => r.status === 'Failed').length;
+  const re = records.filter(r => r.replyStatus === 'Replied').length;
+  const aw = records.filter(r => r.replyStatus === 'Awaiting' && r.status === 'Sent').length;
+  document.getElementById('s-total').textContent   = t;
+  document.getElementById('s-sent').textContent    = se;
+  document.getElementById('s-failed').textContent  = fa;
+  document.getElementById('s-replied').textContent = re;
+  document.getElementById('s-awaiting').textContent = aw;
 }
 
-// ─── FILTER ───
 function setFilter(btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  activeFilter = btn.dataset.filter;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  btn.classList.add('on');
+  activeFilter = btn.dataset.f;
   renderTable();
 }
 
-// ─── TABLE ───
 function renderTable() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-
-  let filtered = records.filter(r => {
-    const matchSearch =
-      r.name.toLowerCase().includes(search)  ||
-      r.firm.toLowerCase().includes(search)  ||
-      r.email.toLowerCase().includes(search) ||
-      r.domain.toLowerCase().includes(search);
-
-    const matchFilter =
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = records.filter(r => {
+    const ms = r.name.toLowerCase().includes(q) || r.firm.toLowerCase().includes(q) || r.email.toLowerCase().includes(q);
+    const mf =
       activeFilter === 'All' ||
       (activeFilter === 'Sent'     && r.status === 'Sent') ||
       (activeFilter === 'Failed'   && r.status === 'Failed') ||
       (activeFilter === 'Replied'  && r.replyStatus === 'Replied') ||
       (activeFilter === 'Awaiting' && r.replyStatus === 'Awaiting');
-
-    return matchSearch && matchFilter;
+    return ms && mf;
   });
 
-  const tbody = document.getElementById('tableBody');
+  const tbody = document.getElementById('tbody');
   const empty = document.getElementById('emptyState');
 
-  if (filtered.length === 0) {
+  if (!filtered.length) {
     tbody.innerHTML = '';
     empty.classList.remove('hidden');
     return;
   }
-
   empty.classList.add('hidden');
 
   tbody.innerHTML = filtered.map((r, i) => {
@@ -459,120 +410,81 @@ function renderTable() {
     const time = dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12: true });
 
     const sendBadge = r.status === 'Sent'
-      ? `<span class="badge badge-sent">✅ Sent</span>`
-      : `<span class="badge badge-failed">❌ Failed</span>`;
-
-    const replyBadge = {
-      'Awaiting': `<span class="badge badge-awaiting">⏳ Awaiting</span>`,
-      'Replied':  `<span class="badge badge-replied">💬 Replied</span>`,
-      'Rejected': `<span class="badge badge-rejected">🚫 Rejected</span>`,
-      'Interview':`<span class="badge badge-replied">🎯 Interview</span>`,
-    }[r.replyStatus] || `<span class="badge badge-awaiting">⏳ Awaiting</span>`;
+      ? `<span class="badge b-sent">✅ Sent</span>`
+      : `<span class="badge b-failed">❌ Failed</span>`;
 
     const cvChip = r.cvAttached
-      ? `<span class="cv-chip">📎 Yes</span>`
-      : `<span style="color:var(--text-dim);font-size:12px;">—</span>`;
+      ? `<span class="badge b-cv">📎 Yes</span>`
+      : `<span style="color:var(--text-3);font-size:11px">—</span>`;
 
-    return `
-      <tr id="tr-${r.id}">
-        <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;">${i + 1}</td>
-        <td class="td-name">${esc(r.name)}</td>
-        <td class="td-firm">${esc(r.firm)}</td>
-        <td><span class="td-domain">${esc(r.domain)}</span></td>
-        <td class="td-email">${esc(r.email)}</td>
-        <td>${sendBadge}</td>
-        <td>${cvChip}</td>
-        <td class="td-date">${date}<br><span style="color:var(--text-dim)">${time}</span></td>
-        <td>
-          <select class="reply-select" onchange="updateReply('${r.id}', this.value)">
-            <option value="Awaiting"  ${r.replyStatus==='Awaiting' ?'selected':''}>⏳ Awaiting</option>
-            <option value="Replied"   ${r.replyStatus==='Replied'  ?'selected':''}>💬 Replied</option>
-            <option value="Interview" ${r.replyStatus==='Interview'?'selected':''}>🎯 Interview</option>
-            <option value="Rejected"  ${r.replyStatus==='Rejected' ?'selected':''}>🚫 Rejected</option>
-          </select>
-        </td>
-        <td>
-          <input
-            class="notes-input"
-            placeholder="Add note…"
-            value="${esc(r.notes)}"
-            onchange="updateNotes('${r.id}', this.value)"
-          />
-        </td>
-        <td>
-          <button class="btn-row-del" onclick="deleteRow('${r.id}')" title="Delete">🗑</button>
-        </td>
-      </tr>
-    `;
+    return `<tr>
+      <td class="td-idx">${i+1}</td>
+      <td class="td-name">${esc(r.name)}</td>
+      <td class="td-firm">${esc(r.firm)}</td>
+      <td class="td-email">${esc(r.email)}</td>
+      <td>${sendBadge}</td>
+      <td>${cvChip}</td>
+      <td class="td-date">${date}<br>${time}</td>
+      <td>
+        <select class="status-sel" onchange="updateReply('${r.id}', this.value)">
+          <option value="Awaiting"  ${r.replyStatus==='Awaiting' ?'selected':''}>⏳ Awaiting</option>
+          <option value="Replied"   ${r.replyStatus==='Replied'  ?'selected':''}>💬 Replied</option>
+          <option value="Interview" ${r.replyStatus==='Interview'?'selected':''}>🎯 Interview</option>
+          <option value="Rejected"  ${r.replyStatus==='Rejected' ?'selected':''}>🚫 Rejected</option>
+        </select>
+      </td>
+      <td>
+        <input class="notes-inp" placeholder="Add note…" value="${esc(r.notes)}" onchange="updateNotes('${r.id}', this.value)">
+      </td>
+      <td><button class="del-btn" onclick="deleteRow('${r.id}')">🗑</button></td>
+    </tr>`;
   }).join('');
 }
 
-function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ─── UPDATES ───
-function updateReply(id, value) {
-  const rec = records.find(r => String(r.id) === String(id));
-  if (rec) { rec.replyStatus = value; saveRecords(); renderStats(); renderTable(); toast('i', '✓ Status updated'); }
+function updateReply(id, val) {
+  const r = records.find(r => String(r.id) === String(id));
+  if (r) { r.replyStatus = val; saveRecords(); renderStats(); renderTable(); showToast('i','✓ Status updated'); }
 }
-
-function updateNotes(id, value) {
-  const rec = records.find(r => String(r.id) === String(id));
-  if (rec) { rec.notes = value; saveRecords(); toast('i', '✓ Note saved'); }
+function updateNotes(id, val) {
+  const r = records.find(r => String(r.id) === String(id));
+  if (r) { r.notes = val; saveRecords(); showToast('i','✓ Note saved'); }
 }
-
 function deleteRow(id) {
   records = records.filter(r => String(r.id) !== String(id));
-  saveRecords(); renderStats(); renderTable();
-  toast('e', 'Entry deleted');
+  saveRecords(); renderStats(); renderTable(); showToast('e','Entry removed');
 }
-
 function clearAll() {
-  if (!confirm('Delete ALL tracker entries? This cannot be undone.')) return;
-  records = [];
-  saveRecords(); renderStats(); renderTable();
-  toast('e', '🗑 All entries cleared');
+  if (!confirm('Delete ALL entries? This cannot be undone.')) return;
+  records = []; saveRecords(); renderStats(); renderTable(); showToast('e','🗑 All cleared');
 }
 
-// ─── EXPORT CSV ───
 function exportCSV() {
-  if (!records.length) { toast('e', '⚠️ Nothing to export'); return; }
-
-  const headers = ['#','Name','Firm','Domain','Email','Send Status','CV Attached','Date','Time','Reply Status','Notes'];
-  const rows = records.map((r, i) => {
+  if (!records.length) { showToast('e','Nothing to export'); return; }
+  const h = ['#','Name','Firm','Email','Status','CV','Date','Time','Reply','Notes'];
+  const rows = records.map((r,i) => {
     const dt = new Date(r.sentAt);
-    return [
-      i+1,
-      r.name, r.firm, r.domain, r.email,
-      r.status,
-      r.cvAttached ? 'Yes' : 'No',
-      dt.toLocaleDateString('en-IN'),
-      dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12: true }),
-      r.replyStatus,
-      r.notes
-    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+    return [i+1, r.name, r.firm, r.email, r.status, r.cvAttached?'Yes':'No',
+      dt.toLocaleDateString('en-IN'), dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}),
+      r.replyStatus, r.notes
+    ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',');
   });
-
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url;
-  a.download = `CA_Articleship_Tracker_${new Date().toISOString().slice(0,10)}.csv`;
+  const csv = [h.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `CA_Tracker_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
-  URL.revokeObjectURL(url);
-  toast('s', '✅ CSV exported!');
+  showToast('s','✅ CSV exported!');
 }
 
-// ─── TOAST ───
-let tt;
-function toast(type, msg) {
+let _tt;
+function showToast(type, msg) {
   const t = document.getElementById('toast');
   document.getElementById('tmsg').textContent = msg;
   t.className = `toast ${type} show`;
-  clearTimeout(tt);
-  tt = setTimeout(() => t.classList.remove('show'), 3500);
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 3200);
 }
 </script>
 </body>
