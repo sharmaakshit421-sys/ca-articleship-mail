@@ -409,6 +409,63 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
 .toast.e { background: rgba(191,64,64,0.15); border: 1px solid rgba(191,64,64,0.35); color: #f08080; }
 .toast.i { background: var(--gold-glow); border: 1px solid var(--gold-rim); color: var(--gold2); }
 
+/* ── CONFIRM MODAL ── */
+.confirm-modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px); z-index: 2000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.confirm-modal-bg.hidden { display: none; }
+.confirm-modal {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 32px; width: 100%; max-width: 420px;
+  text-align: center;
+}
+.confirm-modal .cm-icon { font-size: 42px; margin-bottom: 14px; }
+.confirm-modal h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.confirm-modal p { font-size: 13px; color: var(--text-2); margin-bottom: 24px; line-height: 1.6; }
+.confirm-modal .cm-btns { display: flex; gap: 10px; }
+.confirm-modal .cm-btns .btn { flex: 1; justify-content: center; }
+
+/* ── SCHEDULE CARD ── */
+.schedule-toggle {
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; user-select: none;
+}
+.schedule-toggle input[type="checkbox"] { display: none; }
+.toggle-track {
+  width: 36px; height: 20px; border-radius: 20px;
+  background: var(--border); position: relative;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-track::after {
+  content: ''; position: absolute;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text-3); top: 3px; left: 3px;
+  transition: all 0.2s;
+}
+.schedule-toggle input:checked + .toggle-track { background: var(--gold); }
+.schedule-toggle input:checked + .toggle-track::after { left: 19px; background: var(--bg); }
+.toggle-label { font-size: 13.5px; font-weight: 500; color: var(--text-2); }
+
+.schedule-fields {
+  display: none; margin-top: 18px;
+  padding-top: 18px; border-top: 1px solid var(--border2);
+}
+.schedule-fields.show { display: block; }
+.ist-clock {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-3); margin-top: 8px; text-align: right;
+}
+.ist-clock span { color: var(--gold2); }
+.schedule-info {
+  margin-top: 14px; padding: 10px 14px;
+  background: var(--gold-glow); border: 1px solid var(--gold-rim);
+  border-radius: var(--radius-sm); font-size: 12px; color: var(--text-2);
+  display: none;
+}
+.schedule-info.show { display: block; }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 1080px) {
   .layout { grid-template-columns: 1fr; }
@@ -601,6 +658,24 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
         </div>
       </div>
 
+      <!-- Schedule Send -->
+      <div class="card" id="scheduleCard">
+        <div class="card-title">Schedule Send</div>
+        <label class="schedule-toggle">
+          <input type="checkbox" id="scheduleToggle" onchange="toggleSchedule()">
+          <div class="toggle-track"></div>
+          <span class="toggle-label">Send at a specific time (IST)</span>
+        </label>
+        <div class="schedule-fields" id="scheduleFields">
+          <div class="field" style="margin-bottom:10px;">
+            <label class="label">Date & Time (IST)</label>
+            <input type="datetime-local" id="scheduleTime" style="color-scheme:dark;" oninput="updateScheduleInfo()">
+          </div>
+          <div class="ist-clock">Current IST: <span id="istClock">—</span></div>
+          <div class="schedule-info" id="scheduleInfo"></div>
+        </div>
+      </div>
+
       <!-- Progress -->
       <div class="card prog-card" id="progCard">
         <div class="card-title">
@@ -637,6 +712,19 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
   </div>
 </div>
 
+<!-- Confirm Modal -->
+<div class="confirm-modal-bg hidden" id="confirmModal">
+  <div class="confirm-modal">
+    <div class="cm-icon">📨</div>
+    <h3 id="cmTitle">Send emails?</h3>
+    <p id="cmBody">Are you sure?</p>
+    <div class="cm-btns">
+      <button class="btn btn-ghost" onclick="closeConfirm(false)">Cancel</button>
+      <button class="btn btn-primary" onclick="closeConfirm(true)">Yes, Send</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><span id="tmsg"></span></div>
 
 <script>
@@ -664,6 +752,7 @@ window.addEventListener('load', () => {
   // FIX 3: subject uses cfg.name dynamically
   refreshSubjectDefault();
   updatePreview();
+  setScheduleMin();
 
   // FIX 1: wire up drag-and-drop for Excel drop zone
   initDropZone(
@@ -758,6 +847,7 @@ function applyConfig() {
   // FIX 3: update subject default if unchanged
   refreshSubjectDefault();
   updatePreview();
+  setScheduleMin();
 }
 
 // ── TABS ──
@@ -1009,6 +1099,67 @@ async function saveCVToScript() {
   }
 }
 
+// ── SCHEDULE ──
+function toggleSchedule() {
+  const on = document.getElementById('scheduleToggle').checked;
+  document.getElementById('scheduleFields').classList.toggle('show', on);
+  if (on) updateScheduleInfo();
+}
+
+function updateScheduleInfo() {
+  const val = document.getElementById('scheduleTime').value;
+  const info = document.getElementById('scheduleInfo');
+  if (!val) { info.classList.remove('show'); return; }
+  const chosen = new Date(val); // treated as local time (IST on Indian system)
+  const now = new Date();
+  const diffMs = chosen - now;
+  if (diffMs <= 0) {
+    info.innerHTML = '⚠️ Choose a future time';
+    info.classList.add('show');
+    return;
+  }
+  const diffMin = Math.round(diffMs / 60000);
+  const hrs = Math.floor(diffMin / 60);
+  const mins = diffMin % 60;
+  const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+  info.innerHTML = `⏰ Will send in <strong style="color:var(--gold2)">${timeStr}</strong>`;
+  info.classList.add('show');
+}
+
+// Live IST clock
+setInterval(() => {
+  const el = document.getElementById('istClock');
+  if (!el) return;
+  const ist = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  el.textContent = ist;
+}, 1000);
+
+// Set datetime-local min to now (IST)
+function setScheduleMin() {
+  const inp = document.getElementById('scheduleTime');
+  if (!inp) return;
+  // Get IST time formatted for datetime-local input
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60000;
+  const istNow = new Date(now.getTime() + istOffset);
+  inp.min = istNow.toISOString().slice(0, 16);
+}
+
+// ── CONFIRM MODAL ──
+let _confirmResolve = null;
+function showConfirm(title, body) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById('cmTitle').textContent = title;
+    document.getElementById('cmBody').innerHTML = body;
+    document.getElementById('confirmModal').classList.remove('hidden');
+  });
+}
+function closeConfirm(result) {
+  document.getElementById('confirmModal').classList.add('hidden');
+  if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
+}
+
 // ── SEND ALL ──
 function getAllRecipients() {
   const manual = [...document.querySelectorAll('.rrow')].map(r => {
@@ -1031,6 +1182,34 @@ async function sendAll() {
   const recs = getAllRecipients();
   if (!subj || !body) { showToast('e', 'Subject and body are required'); return; }
   if (!recs.length)   { showToast('e', 'Add at least one recipient');    return; }
+
+  // ── Confirmation for 2+ recipients ──
+  if (recs.length > 1) {
+    const ok = await showConfirm(
+      `Send ${recs.length} emails?`,
+      `You are about to send <strong style="color:var(--gold2)">${recs.length} personalised emails</strong>.<br><br>This cannot be undone. Proceed?`
+    );
+    if (!ok) return;
+  }
+
+  // ── Schedule: wait until chosen IST time ──
+  const scheduleOn = document.getElementById('scheduleToggle').checked;
+  if (scheduleOn) {
+    const val = document.getElementById('scheduleTime').value;
+    if (!val) { showToast('e', 'Please pick a schedule time'); return; }
+    const chosen = new Date(val);
+    const now = new Date();
+    const waitMs = chosen - now;
+    if (waitMs <= 0) { showToast('e', 'Scheduled time is in the past'); return; }
+    const mins = Math.round(waitMs / 60000);
+    const hrs  = Math.floor(mins / 60);
+    const rem  = mins % 60;
+    const label = hrs > 0 ? `${hrs}h ${rem}m` : `${mins}m`;
+    showToast('i', `⏰ Scheduled! Sending in ${label} — keep this tab open`);
+    const btn2 = document.getElementById('sendBtn');
+    btn2.disabled = true; btn2.textContent = `⏰ Scheduled (${label})`;
+    await sleep(waitMs);
+  }
 
   const btn = document.getElementById('sendBtn');
   btn.disabled = true; btn.textContent = 'Sending…';
