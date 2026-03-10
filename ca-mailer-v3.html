@@ -912,12 +912,11 @@ function showCVAttached(name, size, scriptSaved) {
   document.getElementById('cvzone').style.display = 'none';
   // Show save-to-script button only if cfg.url is set and not already saved to script
   const wrap = document.getElementById('cvSaveWrap');
+  wrap.style.display = 'block';
   if (scriptSaved) {
-    wrap.style.display = 'block';
     document.getElementById('cvScriptStatus').innerHTML = '✅ <span style="color:#5ecfa0">Saved to script — will attach automatically on any browser</span>';
     document.getElementById('cvSaveBtn').style.display = 'none';
   } else {
-    wrap.style.display = cfg.url ? 'block' : 'none';
     document.getElementById('cvSaveBtn').style.display = '';
     document.getElementById('cvScriptStatus').textContent = '';
   }
