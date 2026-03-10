@@ -592,6 +592,13 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
           </div>
           <button onclick="removeCV()" style="background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 18px; margin-left: auto;">✕</button>
         </div>
+        <!-- CV save to script button -->
+        <div id="cvSaveWrap" style="display:none; margin-top:12px;">
+          <button class="btn btn-ghost btn-sm" id="cvSaveBtn" onclick="saveCVToScript()" style="width:100%;justify-content:center;">
+            ☁️ Save CV to Script (one-time, works on any browser)
+          </button>
+          <div id="cvScriptStatus" style="font-size:11.5px;color:var(--text-3);margin-top:8px;text-align:center;"></div>
+        </div>
       </div>
 
       <!-- Progress -->
@@ -646,10 +653,11 @@ window.addEventListener('load', () => {
 
   // Restore saved CV
   const savedCV = localStorage.getItem('ca_cv');
+  const cvScriptSaved = localStorage.getItem('ca_cv_script_saved') === '1';
   if (savedCV) {
     try {
       cvData = JSON.parse(savedCV);
-      showCVAttached(cvData.name, cvData.size || 0);
+      showCVAttached(cvData.name, cvData.size || 0, cvScriptSaved);
     } catch(e) { localStorage.removeItem('ca_cv'); }
   }
 
@@ -874,9 +882,15 @@ function processCV(f) {
       mimeType: e.target.result.split(';')[0].replace('data:',''),
       size: f.size
     };
-    localStorage.setItem('ca_cv', JSON.stringify(cvData));
-    showCVAttached(cvData.name, cvData.size);
-    showToast('s', `📎 CV saved: ${f.name}`);
+    try {
+      localStorage.setItem('ca_cv', JSON.stringify(cvData));
+      showCVAttached(cvData.name, cvData.size);
+      showToast('s', `📎 CV saved permanently: ${f.name}`);
+    } catch(e) {
+      // localStorage quota exceeded (CV too large)
+      showCVAttached(cvData.name, cvData.size);
+      showToast('i', `📎 CV attached (session only — file too large to persist)`);
+    }
   };
   reader.readAsDataURL(f);
 }
@@ -887,14 +901,26 @@ function removeCV() {
   document.getElementById('cvfile').value = '';
   document.getElementById('cvAttached').classList.remove('show');
   document.getElementById('cvzone').style.display = 'block';
+  document.getElementById('cvSaveWrap').style.display = 'none';
   showToast('i', 'CV removed');
 }
 
-function showCVAttached(name, size) {
+function showCVAttached(name, size, scriptSaved) {
   document.getElementById('cvName').textContent = name;
   document.getElementById('cvSize').textContent = (size / 1024).toFixed(1) + ' KB';
   document.getElementById('cvAttached').classList.add('show');
   document.getElementById('cvzone').style.display = 'none';
+  // Show save-to-script button only if cfg.url is set and not already saved to script
+  const wrap = document.getElementById('cvSaveWrap');
+  if (scriptSaved) {
+    wrap.style.display = 'block';
+    document.getElementById('cvScriptStatus').innerHTML = '✅ <span style="color:#5ecfa0">Saved to script — will attach automatically on any browser</span>';
+    document.getElementById('cvSaveBtn').style.display = 'none';
+  } else {
+    wrap.style.display = cfg.url ? 'block' : 'none';
+    document.getElementById('cvSaveBtn').style.display = '';
+    document.getElementById('cvScriptStatus').textContent = '';
+  }
 }
 
 // ── LIVE PREVIEW ──
@@ -947,6 +973,41 @@ function updatePreview() {
 
 function updateCC(el) {
   document.getElementById('cc').textContent = `${el.value.length}/150`;
+}
+
+// ── SAVE CV TO SCRIPT ──
+async function saveCVToScript() {
+  if (!cfg.url) { showToast('e', 'Configure script URL first'); openModal(); return; }
+  if (!cvData)  { showToast('e', 'No CV attached'); return; }
+
+  const btn = document.getElementById('cvSaveBtn');
+  const status = document.getElementById('cvScriptStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving to script…';
+  status.textContent = '';
+
+  try {
+    await fetch(cfg.url, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({
+        action:      'save_cv',
+        cv_base64:   cvData.base64,
+        cv_name:     cvData.name,
+        cv_mimetype: cvData.mimeType
+      })
+    });
+    // no-cors = can't read response, but if no network error = success
+    btn.style.display = 'none';
+    status.innerHTML = '✅ <span style="color:#5ecfa0">Saved to script — will attach automatically on any browser</span>';
+    localStorage.setItem('ca_cv_script_saved', '1');
+    showToast('s', '✅ CV saved to script permanently!');
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = '☁️ Save CV to Script (one-time, works on any browser)';
+    status.innerHTML = '<span style="color:#f08080">Failed — check script URL</span>';
+    showToast('e', 'Failed to save CV');
+  }
 }
 
 // ── SEND ALL ──
