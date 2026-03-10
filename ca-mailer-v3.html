@@ -252,6 +252,13 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
   position: relative;
 }
 .drop-zone:hover { border-color: var(--gold-rim); background: rgba(201,151,58,0.07); }
+/* FIX 1: drag-over visual feedback */
+.drop-zone.drag-over {
+  border-color: var(--gold2);
+  background: rgba(201,151,58,0.12);
+  transform: scale(1.01);
+  box-shadow: 0 0 0 4px rgba(201,151,58,0.08);
+}
 .drop-zone input { display: none; }
 .drop-icon { font-size: 36px; margin-bottom: 12px; display: block; }
 .drop-title { font-weight: 600; font-size: 14px; color: var(--text); margin-bottom: 4px; }
@@ -314,6 +321,11 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
   transition: all 0.2s; background: var(--gold-glow);
 }
 .cv-zone:hover { border-color: var(--gold-rim); }
+/* FIX 1: drag-over for CV zone too */
+.cv-zone.drag-over {
+  border-color: var(--gold2);
+  background: rgba(201,151,58,0.12);
+}
 .cv-zone input { display: none; }
 
 .cv-attached {
@@ -442,6 +454,7 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
   <div class="sidebar-footer">
     <div class="conn-status">
       <div class="conn-dot" id="connDot"></div>
+      <!-- FIX 2: conn-label now reflects saved name dynamically -->
       <div class="conn-label" id="connLabel">Not Connected</div>
     </div>
   </div>
@@ -451,7 +464,8 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
 <main>
   <div class="page-header">
     <div>
-      <h1 class="page-title">Welcome back, <em>Akshit</em></h1>
+      <!-- FIX 3: page title uses dynamic name, not hardcoded "Akshit" -->
+      <h1 class="page-title">Welcome back, <em id="headerName">there</em></h1>
       <p class="page-sub">Send personalised articleship applications in bulk</p>
     </div>
     <div class="header-actions">
@@ -479,7 +493,17 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
 
         <div class="field">
           <label class="label">Email Body</label>
-          <textarea id="body" oninput="updatePreview()" placeholder="Write your cover letter here…"></textarea>
+          <textarea id="body" oninput="updatePreview()" placeholder="Write your cover letter here…&#10;&#10;Tip: use {name} and {firm} to personalise each email automatically."></textarea>
+        </div>
+
+        <!-- FIX 4: personalisation hint -->
+        <div style="font-size:11.5px; color:var(--text-3); margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <span style="background:var(--bg);border:1px solid var(--border2);padding:3px 9px;border-radius:20px;font-family:'JetBrains Mono',monospace;">
+            {name} → recipient name
+          </span>
+          <span style="background:var(--bg);border:1px solid var(--border2);padding:3px 9px;border-radius:20px;font-family:'JetBrains Mono',monospace;">
+            {firm} → firm name
+          </span>
         </div>
       </div>
 
@@ -513,10 +537,11 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
 
         <!-- Excel Tab -->
         <div class="tab-panel active" id="tab-excel">
+          <!-- FIX 1: drag-and-drop event listeners added in JS; hint text updated -->
           <div class="drop-zone" id="dropZone" onclick="document.getElementById('excelFile').click()">
             <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" onchange="handleExcel(this)">
             <span class="drop-icon">📊</span>
-            <div class="drop-title">Click to upload your Excel / CSV</div>
+            <div class="drop-title">Drop your Excel / CSV here, or click to upload</div>
             <div class="drop-hint">Columns: <strong>Name</strong>, <strong>Firm</strong>, <strong>Email</strong> — any order</div>
           </div>
           <div class="excel-preview" id="excelPreview">
@@ -552,10 +577,11 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
       <!-- Attach CV -->
       <div class="card">
         <div class="card-title">Attach CV</div>
+        <!-- FIX 1: CV zone also supports drag-drop, wired in JS -->
         <div class="cv-zone" id="cvzone" onclick="document.getElementById('cvfile').click()">
           <input type="file" id="cvfile" accept=".pdf,.doc,.docx" onchange="handleCV(this)">
           <div style="font-size: 28px; margin-bottom: 10px;">📁</div>
-          <div style="font-weight: 600; font-size: 13.5px;">Click to attach your CV</div>
+          <div style="font-weight: 600; font-size: 13.5px;">Drop or click to attach your CV</div>
           <div style="font-size: 12px; color: var(--text-3); margin-top: 4px;">PDF, DOC up to 5MB</div>
         </div>
         <div class="cv-attached" id="cvAttached">
@@ -595,8 +621,10 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
     </div>
     <div class="field">
       <label class="label">Your Full Name</label>
-      <input type="text" id="senderName" placeholder="Akshit Sharma">
+      <!-- FIX 5: oninput updates header name live while typing -->
+      <input type="text" id="senderName" placeholder="Your Name" oninput="cfg.name=this.value.trim();liveUpdateName(this.value)">
     </div>
+
     <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 16px;" onclick="saveConfig()">Save & Connect</button>
     <button class="btn btn-ghost" style="width: 100%; justify-content: center; margin-top: 8px; border: none;" onclick="closeModal()">Cancel</button>
   </div>
@@ -605,7 +633,9 @@ textarea { min-height: 200px; line-height: 1.65; resize: vertical; font-size: 13
 <div class="toast" id="toast"><span id="tmsg"></span></div>
 
 <script>
-let cfg = { url: '', name: 'Akshit Sharma' };
+// FIX 6: cfg now includes phone
+let cfg = { url: '', name: '' };
+const PHONE = '+91 9871026122';
 let rowId = 0;
 let cvData = null;
 let excelRecipients = [];
@@ -613,11 +643,57 @@ let excelRecipients = [];
 window.addEventListener('load', () => {
   const s = localStorage.getItem('ca_gas_cfg');
   if (s) { try { cfg = JSON.parse(s); applyConfig(); } catch(e){} }
-  const subjEl = document.getElementById('subj');
-  subjEl.value = 'Application for CA Articleship - Akshit Sharma';
-  updateCC(subjEl);
+
+  // Restore saved CV
+  const savedCV = localStorage.getItem('ca_cv');
+  if (savedCV) {
+    try {
+      cvData = JSON.parse(savedCV);
+      showCVAttached(cvData.name, cvData.size || 0);
+    } catch(e) { localStorage.removeItem('ca_cv'); }
+  }
+
+  // FIX 3: subject uses cfg.name dynamically
+  refreshSubjectDefault();
   updatePreview();
+
+  // FIX 1: wire up drag-and-drop for Excel drop zone
+  initDropZone(
+    document.getElementById('dropZone'),
+    file => {
+      if (!/\.(xlsx|xls|csv)$/i.test(file.name)) { showToast('e', 'Please upload an Excel or CSV file'); return; }
+      readExcelFile(file);
+    }
+  );
+
+  // FIX 1: wire up drag-and-drop for CV zone
+  initDropZone(
+    document.getElementById('cvzone'),
+    file => {
+      if (!/\.(pdf|doc|docx)$/i.test(file.name)) { showToast('e', 'Please upload a PDF or DOC file'); return; }
+      processCV(file);
+    },
+    true /* stop click propagation when drop used */
+  );
 });
+
+// ── FIX 1: Generic drag-and-drop helper ──
+function initDropZone(zone, onFileDrop, isCvZone = false) {
+  zone.addEventListener('dragover', e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.remove('drag-over');
+  });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) onFileDrop(file);
+  });
+}
 
 // ── SIDEBAR ──
 function toggleSidebar() {
@@ -626,14 +702,37 @@ function toggleSidebar() {
   document.getElementById('hamburger').classList.toggle('open');
 }
 
+// ── FIX 3: refresh subject placeholder with current name ──
+function refreshSubjectDefault() {
+  const subjEl = document.getElementById('subj');
+  // Only set default if field is still empty or was the previous default
+  const displayName = cfg.name || 'Your Name';
+  const prev = subjEl.dataset.defaultVal || '';
+  if (!subjEl.value || subjEl.value === prev) {
+    const next = `Application for CA Articleship - ${displayName}`;
+    subjEl.value = next;
+    subjEl.dataset.defaultVal = next;
+    updateCC(subjEl);
+  }
+}
+
+// FIX 5: live update header name as user types in modal
+function liveUpdateName(val) {
+  document.getElementById('headerName').textContent = val || 'there';
+}
+
 // ── CONFIG / MODAL ──
-function openModal() { document.getElementById('modal').classList.remove('hidden'); }
+function openModal() {
+  document.getElementById('scriptUrl').value = cfg.url || '';
+  document.getElementById('senderName').value = cfg.name || '';
+  document.getElementById('modal').classList.remove('hidden');
+}
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
 function saveConfig() {
-  const url = document.getElementById('scriptUrl').value.trim();
-  const name = document.getElementById('senderName').value.trim();
-  if (!url || !name) { showToast('e', 'Please fill both fields'); return; }
+  const url   = document.getElementById('scriptUrl').value.trim();
+  const name  = document.getElementById('senderName').value.trim();
+  if (!url || !name) { showToast('e', 'Please fill Script URL and Name'); return; }
   cfg = { url, name };
   localStorage.setItem('ca_gas_cfg', JSON.stringify(cfg));
   applyConfig();
@@ -644,9 +743,12 @@ function saveConfig() {
 function applyConfig() {
   document.getElementById('connDot').classList.add('on');
   document.getElementById('connLabel').classList.add('on');
-  document.getElementById('connLabel').textContent = 'Gmail Connected';
-  document.getElementById('scriptUrl').value = cfg.url;
-  document.getElementById('senderName').value = cfg.name;
+  // FIX 2: show actual sender name in sidebar status
+  document.getElementById('connLabel').textContent = cfg.name ? `${cfg.name}` : 'Gmail Connected';
+  // FIX 3: update header name
+  document.getElementById('headerName').textContent = cfg.name ? cfg.name.split(' ')[0] : 'there';
+  // FIX 3: update subject default if unchanged
+  refreshSubjectDefault();
   updatePreview();
 }
 
@@ -663,6 +765,11 @@ function switchTab(tab, el) {
 function handleExcel(input) {
   const file = input.files[0];
   if (!file) return;
+  readExcelFile(file);
+  input.value = '';
+}
+
+function readExcelFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
     try {
@@ -672,8 +779,8 @@ function handleExcel(input) {
       const json = XLSX.utils.sheet_to_json(ws);
       if (!json.length) { showToast('e', 'File appears empty'); return; }
       excelRecipients = json.map(row => ({
-        name: row.Name || row.name || row['Full Name'] || row['First Name'] || '',
-        firm: row.Firm || row.firm || row['Firm Name'] || '',
+        name:  row.Name  || row.name  || row['Full Name']     || row['First Name'] || '',
+        firm:  row.Firm  || row.firm  || row['Firm Name']     || '',
         email: row.Email || row.email || row['Email Address'] || ''
       })).filter(r => r.email);
       renderExcelPreview();
@@ -683,7 +790,6 @@ function handleExcel(input) {
     } catch(err) {
       showToast('e', 'Error reading file');
     }
-    input.value = '';
   };
   reader.readAsArrayBuffer(file);
 }
@@ -696,7 +802,7 @@ function renderExcelPreview() {
     `<div class="excel-row">
       <div>${esc(r.name) || '<span style="color:var(--text-3)">—</span>'}</div>
       <div>${esc(r.firm) || '<span style="color:var(--text-3)">—</span>'}</div>
-      <div style="font-family:\'JetBrains Mono\',monospace;font-size:11px;">${esc(r.email)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;">${esc(r.email)}</div>
     </div>`
   ).join('');
   preview.classList.add('show');
@@ -720,7 +826,7 @@ function addRow(name='', firm='', email='') {
   el.innerHTML = `
     <div class="field">
       <label class="label">First Name</label>
-      <input type="text" id="rn${id}" placeholder="Name" value="${esc(name)}" oninput="updatePreview()">
+      <input type="text" id="rn${id}" placeholder="Name" value="${esc(name)}" oninput="updateCount(); updatePreview()">
     </div>
     <div class="field">
       <label class="label">Firm Name</label>
@@ -728,7 +834,7 @@ function addRow(name='', firm='', email='') {
     </div>
     <div class="field">
       <label class="label">Email</label>
-      <input type="email" id="re${id}" placeholder="email@firm.com" value="${esc(email)}">
+      <input type="email" id="re${id}" placeholder="email@firm.com" value="${esc(email)}" oninput="updateCount(); updatePreview()">
     </div>
     <button class="btn-del" onclick="delRow(${id})">✕</button>
   `;
@@ -755,59 +861,86 @@ function updateCount() {
 function handleCV(input) {
   const f = input.files[0];
   if (!f) return;
+  processCV(f);
+}
+
+function processCV(f) {
+  if (f.size > 5 * 1024 * 1024) { showToast('e', 'CV must be under 5MB'); return; }
   const reader = new FileReader();
   reader.onload = e => {
-    cvData = { base64: e.target.result.split(',')[1], name: f.name, mimeType: e.target.result.split(';')[0].replace('data:','') };
-    document.getElementById('cvName').textContent = f.name;
-    document.getElementById('cvSize').textContent = (f.size / 1024).toFixed(1) + ' KB';
-    document.getElementById('cvAttached').classList.add('show');
-    document.getElementById('cvzone').style.display = 'none';
+    cvData = {
+      base64: e.target.result.split(',')[1],
+      name: f.name,
+      mimeType: e.target.result.split(';')[0].replace('data:',''),
+      size: f.size
+    };
+    localStorage.setItem('ca_cv', JSON.stringify(cvData));
+    showCVAttached(cvData.name, cvData.size);
+    showToast('s', `📎 CV saved: ${f.name}`);
   };
   reader.readAsDataURL(f);
 }
 
 function removeCV() {
   cvData = null;
+  localStorage.removeItem('ca_cv');
   document.getElementById('cvfile').value = '';
   document.getElementById('cvAttached').classList.remove('show');
   document.getElementById('cvzone').style.display = 'block';
+  showToast('i', 'CV removed');
+}
+
+function showCVAttached(name, size) {
+  document.getElementById('cvName').textContent = name;
+  document.getElementById('cvSize').textContent = (size / 1024).toFixed(1) + ' KB';
+  document.getElementById('cvAttached').classList.add('show');
+  document.getElementById('cvzone').style.display = 'none';
 }
 
 // ── LIVE PREVIEW ──
+// FIX 4: {name} and {firm} personalisation tokens shown in preview
 function updatePreview() {
-  const body = document.getElementById('body').value.trim();
-  const sender = cfg.name || 'Akshit Sharma';
+  const rawBody = document.getElementById('body').value.trim();
+  const sender  = (document.getElementById('senderName').value.trim()) || cfg.name  || 'Your Name';
+  const phone   = PHONE;
   const el = document.getElementById('previewBody');
 
-  // Get first recipient name
-  let recipientName = 'Sir/Madam';
+  // Get first recipient for preview
+  let recipientName  = 'Sir/Madam';
   let recipientEmail = '';
-  
+  let recipientFirm  = '';
+
   if (excelRecipients.length > 0) {
-    recipientName = excelRecipients[0].name || 'Sir/Madam';
-    recipientEmail = excelRecipients[0].email;
+    recipientName  = excelRecipients[0].name  || 'Sir/Madam';
+    recipientEmail = excelRecipients[0].email || '';
+    recipientFirm  = excelRecipients[0].firm  || '';
   } else {
     const rows = document.querySelectorAll('.rrow');
     if (rows.length > 0) {
       const firstId = rows[0].id.replace('r','');
-      recipientName = document.getElementById(`rn${firstId}`)?.value || 'Sir/Madam';
+      recipientName  = document.getElementById(`rn${firstId}`)?.value || 'Sir/Madam';
       recipientEmail = document.getElementById(`re${firstId}`)?.value || '';
+      recipientFirm  = document.getElementById(`rf${firstId}`)?.value || '';
     }
   }
 
-  if (!body) {
+  if (!rawBody) {
     el.innerHTML = '<p class="preview-empty">Start typing your email body to see a preview…</p>';
     return;
   }
 
+  // FIX 4: resolve {name} and {firm} tokens in preview
+  const resolvedBody = rawBody
+    .replace(/\{name\}/gi, recipientName || 'Sir/Madam')
+    .replace(/\{firm\}/gi, recipientFirm || 'the firm');
+
   el.innerHTML = `
     <div class="preview-to">To: <span>${esc(recipientEmail) || 'recipient@firm.com'}</span></div>
-    <div class="preview-greeting">Dear ${esc(recipientName)},</div>
-    <div class="preview-content">${body.replace(/\n/g, '<br>')}</div>
+    <div class="preview-greeting">Dear ${esc(recipientName || 'Sir/Madam')},</div>
+    <div class="preview-content">${resolvedBody.replace(/\n/g, '<br>')}</div>
     <div class="preview-sign">
       <strong>Warm Regards,</strong>
-      ${esc(sender)}<br>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3)">+91 9871026122</span>
+      ${esc(sender)}<br><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3)">${esc(phone)}</span>
     </div>
   `;
 }
@@ -821,8 +954,8 @@ function getAllRecipients() {
   const manual = [...document.querySelectorAll('.rrow')].map(r => {
     const id = r.id.replace('r','');
     return {
-      name: document.getElementById(`rn${id}`)?.value || '',
-      firm: document.getElementById(`rf${id}`)?.value || '',
+      name:  document.getElementById(`rn${id}`)?.value || '',
+      firm:  document.getElementById(`rf${id}`)?.value || '',
       email: document.getElementById(`re${id}`)?.value || ''
     };
   }).filter(r => r.email);
@@ -837,24 +970,22 @@ async function sendAll() {
   const body = document.getElementById('body').value.trim();
   const recs = getAllRecipients();
   if (!subj || !body) { showToast('e', 'Subject and body are required'); return; }
-  if (!recs.length) { showToast('e', 'Add at least one recipient'); return; }
+  if (!recs.length)   { showToast('e', 'Add at least one recipient');    return; }
 
   const btn = document.getElementById('sendBtn');
   btn.disabled = true; btn.textContent = 'Sending…';
 
   const progCard = document.getElementById('progCard');
-  const progLog = document.getElementById('progLog');
-  const progBar = document.getElementById('progBar');
+  const progLog  = document.getElementById('progLog');
+  const progBar  = document.getElementById('progBar');
   progCard.classList.add('show');
   progLog.innerHTML = '';
 
-  // Debug: show which URL is being used
   const dbg = document.createElement('div');
   dbg.className = 'log-line wait';
   dbg.textContent = `🔗 Script: ${cfg.url.slice(0,60)}…`;
   progLog.appendChild(dbg);
 
-  // Load existing tracker records
   let trackerRecords = [];
   try { trackerRecords = JSON.parse(localStorage.getItem('ca_tracker') || '[]'); } catch(e) {}
 
@@ -870,12 +1001,19 @@ async function sendAll() {
 
     let success = false;
     try {
+      // FIX 4: resolve {name} and {firm} tokens per recipient in actual message
+      const personalBody = body
+        .replace(/\{name\}/gi, r.name || 'Sir/Madam')
+        .replace(/\{firm\}/gi, r.firm || 'the firm');
+
+      const signature = `\n\nWarm Regards,\n${cfg.name}\n${PHONE}`;
+
       const payload = {
         to_email:  r.email,
         to_name:   r.name,
         firm_name: r.firm,
         subject:   subj,
-        message:   `Dear ${r.name || 'Sir/Madam'},\n\n${body}\n\nWarm Regards,\n${cfg.name}\n+91 9871026122`,
+        message:   `Dear ${r.name || 'Sir/Madam'},\n\n${personalBody}${signature}`,
         from_name: cfg.name
       };
       if (cvData) {
@@ -885,21 +1023,16 @@ async function sendAll() {
       }
 
       await fetch(cfg.url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-
-      // no-cors always resolves (never rejects) unless network is down
       success = true;
       line.className = 'log-line ok';
       line.textContent = `✓  ${r.email}`;
       sent++;
     } catch(e) {
-      // With no-cors, fetch should never throw unless the device is offline
-      // or the URL is completely unreachable. Log the actual error for debugging.
       console.error('Fetch error for', r.email, e);
       line.className = 'log-line err';
       line.textContent = `✗  ${r.email} — ${e.message || 'network error'}`;
     }
 
-    // Write to tracker regardless (mark failed if network error)
     const domain = r.email.split('@')[1] || '';
     trackerRecords.push({
       id:          Date.now() + '_' + i,
@@ -919,7 +1052,6 @@ async function sendAll() {
     progBar.style.width = `${pct}%`;
     document.getElementById('progFrac').textContent = `${i + 1}/${recs.length}`;
 
-    // Small delay to avoid hitting GAS rate limits
     if (i < recs.length - 1) await sleep(800);
   }
 
