@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA Articleship Mailer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2a2a2a;
+    --border2: #333;
+    --text: #f0f0f0;
+    --text2: #888;
+    --text3: #555;
+    --accent: #4ade80;
+    --accent-dim: rgba(74,222,128,0.1);
+    --accent-border: rgba(74,222,128,0.25);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.1);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.1);
+    --blue: #60a5fa;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--accent-dim); border: 1px solid var(--accent-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--text2); margin-top: -2px; }
+
+  #auth-status {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .auth-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text3); flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .auth-dot.connected { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .auth-label { font-size: 12px; color: var(--text2); }
+  .auth-email { font-size: 12px; color: var(--text); font-family: 'DM Mono', monospace; }
+
+  .main { display: grid; grid-template-columns: 1fr 380px; flex: 1; }
+  .left-panel { padding: 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; }
+  .right-panel { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; }
+  .card-body { padding: 16px; }
+
+  /* ── Connect screen ── */
+  #connect-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; flex-direction: column; gap: 0;
+  }
+  .connect-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 380px;
+    text-align: center;
+  }
+  .connect-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: var(--accent-dim); border: 1px solid var(--accent-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin: 0 auto 20px;
+  }
+  .connect-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.4px; }
+  .connect-desc { font-size: 13px; color: var(--text2); margin-bottom: 28px; line-height: 1.6; }
+  .connect-perms {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    margin-bottom: 24px; text-align: left;
+  }
+  .connect-perms p { font-size: 11px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .perm-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); padding: 3px 0; }
+  .perm-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  #google-signin-btn { width: 100%; }
+  .g-signin-custom {
+    width: 100%; padding: 11px 20px;
+    background: #fff; color: #1f1f1f;
+    border: none; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: opacity 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .g-signin-custom:hover { opacity: 0.92; }
+  .g-signin-custom img { width: 18px; height: 18px; }
+
+  /* ── Inputs ── */
+  label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+  input[type=text], input[type=email], textarea, select {
+    width: 100%; padding: 9px 12px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+    resize: vertical;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 120px; line-height: 1.6; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 9px 16px; border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary {
+    background: var(--accent); color: #0f0f0f; border-color: var(--accent);
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent; color: var(--text2); border-color: var(--border2);
+  }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-danger {
+    background: var(--red-dim); color: var(--red); border-color: rgba(248,113,113,0.2);
+  }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* ── Recipients ── */
+  .drop-zone {
+    border: 1px dashed var(--border2); border-radius: var(--radius-sm);
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface2);
+    margin-bottom: 12px;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent); background: var(--accent-dim);
+  }
+  .drop-icon { font-size: 22px; margin-bottom: 6px; }
+  .drop-text { font-size: 12px; color: var(--text2); }
+  .drop-hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  #file-input { display: none; }
+
+  .recipients-table-wrap { overflow-x: auto; max-height: 220px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { padding: 7px 10px; text-align: left; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .del-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 0 4px; }
+  .del-btn:hover { color: var(--red); }
+
+  .add-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 12px; }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display: flex; gap: 16px; padding: 10px 16px;
+    background: var(--surface2); border-top: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .stat { display: flex; align-items: center; gap: 5px; }
+  .stat-val { font-weight: 600; font-family: 'DM Mono', monospace; }
+  .stat-lbl { color: var(--text2); }
+
+  /* ── CV Upload ── */
+  .cv-zone {
+    border: 1px dashed var(--border2); border-radius: var(--radius-sm);
+    padding: 16px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface2);
+  }
+  .cv-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .cv-attached {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--accent-border);
+    border-radius: var(--radius-sm);
+  }
+  .cv-name { font-size: 12px; font-family: 'DM Mono', monospace; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #cv-input { display: none; }
+
+  /* ── Preview ── */
+  .preview-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px;
+    font-size: 12px; line-height: 1.7; min-height: 120px;
+    white-space: pre-wrap; color: var(--text); font-family: 'DM Mono', monospace;
+  }
+  .preview-empty { color: var(--text3); font-style: italic; font-family: 'DM Sans', sans-serif; }
+
+  /* ── Progress ── */
+  .progress-wrap { background: var(--surface2); border-radius: 4px; height: 4px; overflow: hidden; margin: 10px 0; }
+  .progress-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; width: 0%; }
+  .log-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    max-height: 180px; overflow-y: auto; font-size: 11px;
+    font-family: 'DM Mono', monospace; line-height: 1.8;
+  }
+  .log-ok { color: var(--accent); }
+  .log-err { color: var(--red); }
+  .log-info { color: var(--text2); }
+
+  /* ── Tags / badges ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  }
+  .badge-green { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); }
+
+  /* ── Confirm modal ── */
+  #confirm-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center; z-index: 300;
+    min-height: 100vh;
+  }
+  #confirm-modal.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px; width: 340px;
+    text-align: center;
+  }
+  .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .modal-desc { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+  .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* ── Delay setting ── */
+  .delay-row { display: flex; align-items: center; gap: 10px; }
+  .delay-row input[type=number] { width: 70px; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .left-panel { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Connect Screen ── -->
+<div id="connect-screen">
+  <div class="connect-box">
+    <div class="connect-icon">✉</div>
+    <div class="connect-title">CA Articleship Mailer</div>
+    <div class="connect-desc">Send personalised bulk applications to CA firms — directly from your Gmail. No setup, no scripts.</div>
+    <div class="connect-perms">
+      <p>Permissions requested</p>
+      <div class="perm-item"><span class="perm-dot"></span>Send emails on your behalf</div>
+      <div class="perm-item"><span class="perm-dot"></span>Read your email address</div>
+    </div>
+    <button class="g-signin-custom" onclick="startGoogleLogin()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+      Continue with Google
+    </button>
+    <p style="font-size:11px;color:var(--text3);margin-top:14px;">Your emails are sent directly via Gmail API. We never store your data.</p>
+  </div>
+</div>
+
+<!-- ── Confirm Modal ── -->
+<div id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-title">Send emails?</div>
+    <div class="modal-desc" id="confirm-desc">You're about to send to <strong id="confirm-count">0</strong> recipients. This cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSend()">Yes, Send All</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main App ── -->
+<div class="app" id="main-app" style="display:none">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">✉</div>
+      <div>
+        <div class="logo-text">CA Articleship Mailer</div>
+        <div class="logo-sub">Bulk email tool for articleship applications</div>
+      </div>
+    </div>
+    <div id="auth-status">
+      <div class="auth-dot connected"></div>
+      <div>
+        <div class="auth-label">Connected as</div>
+        <div class="auth-email" id="user-email-display">—</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- LEFT: Compose + Recipients -->
+    <div class="left-panel">
+
+      <!-- Compose -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Compose Email</span>
+          <span class="badge badge-amber" style="font-size:10px;">Use {name} and {firm} as placeholders</span>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label>Subject Line</label>
+            <input type="text" id="subject" placeholder="Application for Articleship — {name}" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Email Body</label>
+            <textarea id="body" rows="8" placeholder="Dear {name},&#10;&#10;I am writing to express my interest in articleship at {firm}..." oninput="updatePreview()"></textarea>
+          </div>
+          <div class="field">
+            <label>Your Name (shown as sender)</label>
+            <input type="text" id="sender-name" placeholder="e.g. Akshit Sharma">
+          </div>
+        </div>
+      </div>
+
+      <!-- Recipients -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recipients</span>
+          <span id="rec-count-badge" class="badge badge-green">0 added</span>
+        </div>
+        <div class="card-body">
+          <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <div class="drop-icon">📊</div>
+            <div class="drop-text">Drop Excel / CSV here, or click to upload</div>
+            <div class="drop-hint">Columns: Name, Firm, Email — any order</div>
+          </div>
+          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" onchange="handleFile(this.files[0])">
+
+          <div id="table-wrap" class="recipients-table-wrap" style="display:none">
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Firm</th><th>Email</th><th></th></tr></thead>
+              <tbody id="rec-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="add-row" style="margin-top:12px">
+            <div>
+              <label>Name</label>
+              <input type="text" id="add-name" placeholder="Raj Sharma">
+            </div>
+            <div>
+              <label>Firm</label>
+              <input type="text" id="add-firm" placeholder="Deloitte & Co">
+            </div>
+            <div>
+              <label>Email</label>
+              <input type="email" id="add-email" placeholder="hr@deloitte.com">
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-bottom:1px" onclick="addManual()">+ Add</button>
+          </div>
+        </div>
+        <div class="stats-bar">
+          <div class="stat"><span class="stat-val" id="stat-total">0</span><span class="stat-lbl">total</span></div>
+          <div class="stat"><span class="stat-val" id="stat-sent" style="color:var(--accent)">0</span><span class="stat-lbl">sent</span></div>
+          <div class="stat"><span class="stat-val" id="stat-failed" style="color:var(--red)">0</span><span class="stat-lbl">failed</span></div>
+          <div style="flex:1"></div>
+          <button class="btn btn-danger btn-sm" onclick="clearRecipients()">Clear all</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: CV + Preview + Send -->
+    <div class="right-panel">
+
+      <!-- CV Upload -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Attach CV</span></div>
+        <div class="card-body">
+          <div id="cv-drop" class="cv-zone" onclick="document.getElementById('cv-input').click()" style="display:block">
+            <div style="font-size:20px;margin-bottom:6px">📎</div>
+            <div style="font-size:12px;color:var(--text2)">Click to attach CV / Resume</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">PDF, DOC up to 5MB</div>
+          </div>
+          <div id="cv-attached" class="cv-attached" style="display:none">
+            <span style="font-size:18px">📎</span>
+            <span class="cv-name" id="cv-filename">—</span>
+            <button class="btn btn-ghost btn-sm" onclick="removeCV()">✕</button>
+          </div>
+          <input type="file" id="cv-input" accept=".pdf,.doc,.docx" onchange="handleCV(this.files[0])">
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Send Settings</span></div>
+        <div class="card-body">
+          <div class="field">
+            <label>Delay between emails (seconds)</label>
+            <div class="delay-row">
+              <input type="number" id="send-delay" value="2" min="1" max="30" style="width:80px">
+              <span style="font-size:12px;color:var(--text2)">Recommended: 2–5s to avoid spam filters</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Preview -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Live Preview</span>
+          <span style="font-size:11px;color:var(--text3)">First recipient</span>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:8px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">SUBJECT</div>
+            <div id="preview-subject" style="font-size:12px;font-weight:500;color:var(--text)">—</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">BODY</div>
+          <div class="preview-box" id="preview-body"><span class="preview-empty">Start typing to see preview…</span></div>
+        </div>
+      </div>
+
+      <!-- Send -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Send</span></div>
+        <div class="card-body">
+          <div class="progress-wrap" id="progress-wrap" style="display:none">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <div id="progress-label" style="font-size:11px;color:var(--text2);margin-bottom:8px;display:none"></div>
+          <button class="btn btn-primary btn-full" id="send-btn" onclick="openModal()">
+            Send to all recipients →
+          </button>
+          <div id="log-box" class="log-box" style="display:none;margin-top:12px"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const CLIENT_ID = '801764765174-gh4ede8fgunpho1kd4hhd8njofq315oc.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/gmail.send email profile';
+
+let accessToken = null;
+let userEmail = '';
+let recipients = [];
+let cvFile = null;
+let cvBase64 = null;
+let cvMime = '';
+let isSending = false;
+
+// ── Google Login ──
+function startGoogleLogin() {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if (resp.error) { alert('Login failed: ' + resp.error); return; }
+      accessToken = resp.access_token;
+      fetchUserInfo();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function fetchUserInfo() {
+  fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  }).then(r => r.json()).then(info => {
+    userEmail = info.email;
+    document.getElementById('user-email-display').textContent = userEmail;
+    document.getElementById('connect-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'flex';
+  });
+}
+
+function signOut() {
+  if (!confirm('Sign out?')) return;
+  accessToken = null; userEmail = '';
+  document.getElementById('connect-screen').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+}
+
+// ── File / CSV Import ──
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+
+function handleFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv') {
+    const reader = new FileReader();
+    reader.onload = e => parseCSV(e.target.result);
+    reader.readAsText(file);
+  } else if (ext === 'xlsx' || ext === 'xls') {
+    const reader = new FileReader();
+    reader.onload = e => parseXLSX(e.target.result);
+    reader.readAsArrayBuffer(file);
+  } else {
+    alert('Please upload a CSV or Excel file.');
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return;
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g,''));
+  const ni = headers.findIndex(h => h.includes('name'));
+  const fi = headers.findIndex(h => h.includes('firm') || h.includes('company') || h.includes('org'));
+  const ei = headers.findIndex(h => h.includes('email') || h.includes('mail'));
+  if (ei === -1) { alert('Could not find Email column. Make sure your CSV has columns: Name, Firm, Email'); return; }
+  const parsed = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim().replace(/^["']|["']$/g,''));
+    const row = { name: ni>=0?cols[ni]:'', firm: fi>=0?cols[fi]:'', email: cols[ei] };
+    if (row.email) parsed.push(row);
+  }
+  recipients.push(...parsed);
+  renderTable(); updatePreview();
+}
+
+function parseXLSX(buf) {
+  // Simple XLSX parsing without library — read as CSV fallback
+  alert('Excel detected! For best results, please save as CSV first (File → Save As → CSV). Or add rows manually below.');
+}
+
+function addManual() {
+  const name = document.getElementById('add-name').value.trim();
+  const firm = document.getElementById('add-firm').value.trim();
+  const email = document.getElementById('add-email').value.trim();
+  if (!email) { alert('Email is required'); return; }
+  recipients.push({ name, firm, email });
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-firm').value = '';
+  document.getElementById('add-email').value = '';
+  renderTable(); updatePreview();
+}
+
+function removeRecipient(i) {
+  recipients.splice(i, 1);
+  renderTable(); updatePreview();
+}
+
+function clearRecipients() {
+  if (recipients.length && !confirm('Clear all recipients?')) return;
+  recipients = [];
+  renderTable(); updatePreview();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('rec-tbody');
+  tbody.innerHTML = '';
+  recipients.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td>${r.name||'—'}</td><td>${r.firm||'—'}</td><td>${r.email}</td><td><button class="del-btn" onclick="removeRecipient(${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  const wrap = document.getElementById('table-wrap');
+  wrap.style.display = recipients.length ? 'block' : 'none';
+  document.getElementById('rec-count-badge').textContent = recipients.length + ' added';
+  document.getElementById('stat-total').textContent = recipients.length;
+}
+
+// ── CV ──
+function handleCV(file) {
+  if (!file) return;
+  cvFile = file;
+  cvMime = file.type || 'application/octet-stream';
+  const reader = new FileReader();
+  reader.onload = e => {
+    cvBase64 = e.target.result.split(',')[1];
+    document.getElementById('cv-drop').style.display = 'none';
+    document.getElementById('cv-attached').style.display = 'flex';
+    document.getElementById('cv-filename').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCV() {
+  cvFile = null; cvBase64 = null; cvMime = '';
+  document.getElementById('cv-drop').style.display = 'block';
+  document.getElementById('cv-attached').style.display = 'none';
+  document.getElementById('cv-input').value = '';
+}
+
+// ── Preview ──
+function updatePreview() {
+  const subj = document.getElementById('subject').value;
+  const body = document.getElementById('body').value;
+  const r = recipients[0] || { name: 'Recipient Name', firm: 'Firm Name' };
+  const filled = s => s.replace(/\{name\}/gi, r.name||'Name').replace(/\{firm\}/gi, r.firm||'Firm');
+  const ps = document.getElementById('preview-subject');
+  const pb = document.getElementById('preview-body');
+  ps.textContent = subj ? filled(subj) : '—';
+  if (body) {
+    pb.innerHTML = '';
+    pb.textContent = filled(body);
+    pb.style.color = 'var(--text)';
+  } else {
+    pb.innerHTML = '<span class="preview-empty">Start typing to see preview…</span>';
+  }
+}
+
+// ── Modal ──
+function openModal() {
+  if (!recipients.length) { alert('Add at least one recipient first.'); return; }
+  if (!document.getElementById('subject').value.trim()) { alert('Subject line is empty.'); return; }
+  if (!document.getElementById('body').value.trim()) { alert('Email body is empty.'); return; }
+  if (!accessToken) { alert('Please sign in with Google first.'); return; }
+  document.getElementById('confirm-count').textContent = recipients.length;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('confirm-modal').classList.remove('open'); }
+function confirmSend() { closeModal(); sendAll(); }
+
+// ── Send ──
+async function sendAll() {
+  if (isSending) return;
+  isSending = true;
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  const delay = parseInt(document.getElementById('send-delay').value) * 1000 || 2000;
+  const subj = document.getElementById('subject').value;
+  const bodyTpl = document.getElementById('body').value;
+  const senderName = document.getElementById('sender-name').value.trim() || userEmail;
+
+  const logBox = document.getElementById('log-box');
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressBar = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+  logBox.style.display = 'block';
+  progressWrap.style.display = 'block';
+  progressLabel.style.display = 'block';
+  logBox.innerHTML = '';
+
+  let sent = 0, failed = 0;
+
+  function log(msg, type='info') {
+    const div = document.createElement('div');
+    div.className = 'log-' + type;
+    div.textContent = msg;
+    logBox.appendChild(div);
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  log('Starting send to ' + recipients.length + ' recipients…', 'info');
+
+  for (let i = 0; i < recipients.length; i++) {
+    const r = recipients[i];
+    const filled = s => s.replace(/\{name\}/gi, r.name||'').replace(/\{firm\}/gi, r.firm||'');
+    const filledSubj = filled(subj);
+    const filledBody = filled(bodyTpl);
+
+    progressBar.style.width = ((i / recipients.length) * 100) + '%';
+    progressLabel.textContent = `Sending ${i+1} of ${recipients.length}…`;
+
+    try {
+      await sendEmail(senderName, userEmail, r.email, filledSubj, filledBody);
+      sent++;
+      document.getElementById('stat-sent').textContent = sent;
+      log(`✓ ${r.email} — ${r.firm||''}`, 'ok');
+    } catch(e) {
+      failed++;
+      document.getElementById('stat-failed').textContent = failed;
+      log(`✗ ${r.email} — ${e.message}`, 'err');
+    }
+
+    if (i < recipients.length - 1) await sleep(delay);
+  }
+
+  progressBar.style.width = '100%';
+  progressLabel.textContent = `Done — ${sent} sent, ${failed} failed`;
+  log(`\nCompleted: ${sent}/${recipients.length} sent successfully.`, 'info');
+  btn.disabled = false;
+  isSending = false;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function sendEmail(fromName, fromEmail, to, subject, body) {
+  const boundary = 'ca_mailer_' + Math.random().toString(36).slice(2);
+  let raw = '';
+
+  if (cvBase64) {
+    const cvName = cvFile ? cvFile.name : 'CV.pdf';
+    raw = [
+      `From: "${fromName}" <${fromEmail}>`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      ``,
+      `--${boundary}`,
+      `Content-Type: text/plain; charset=UTF-8`,
+      ``,
+      body,
+      ``,
+      `--${boundary}`,
+      `Content-Type: ${cvMime}; name="${cvName}"`,
+      `Content-Disposition: attachment; filename="${cvName}"`,
+      `Content-Transfer-Encoding: base64`,
+      ``,
+      cvBase64,
+      `--${boundary}--`
+    ].join('\r\n');
+  } else {
+    raw = [
+      `From: "${fromName}" <${fromEmail}>`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: text/plain; charset=UTF-8`,
+      ``,
+      body
+    ].join('\r\n');
+  }
+
+  const encoded = btoa(unescape(encodeURIComponent(raw)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+  const resp = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + accessToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ raw: encoded })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error?.message || 'Send failed');
+  }
+  return resp.json();
+}
+</script>
+</body>
+</html>
